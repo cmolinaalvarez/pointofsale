@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -8,17 +8,17 @@ from pydantic import BaseModel  # ✅ Importar BaseModel
 from app.schemas.account import AccountCreate, AccountUpdate, AccountRead, AccountPatch
 from app.crud.account import create_account, get_accounts, get_account_by_id, update_account, patch_account
 from app.models.user import User
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Accounts"])
+router = APIRouter(tags=["Accounts"], dependencies=[Depends(get_current_user)])
 
 # ✅ Schema de respuesta para GET ALL
 class AccountListResponse(BaseModel):
@@ -38,13 +38,13 @@ class AccountWithEnumResponse(BaseModel):
         from_attributes = True
 
 @router.post("/", response_model=AccountRead)
-async def create_account_endpoint(account_in: AccountCreate, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
+async def create_account_endpoint(account_in: AccountCreate, db: AsyncSession = Depends(get_async_db), uid: str = Depends(current_user_id)):
     try:
-        new_account, log = await create_account(db, account_in, current_user.id)
+        new_account, log = await create_account(db, account_in, uid)
         if log:
             db.add(log)
         await db.commit()
-        logger.info(f"Accounto creado: {new_account.id} por usuario {current_user.id}")
+        logger.info(f"Accounto creado: {new_account.id} por usuario {uid}")
         return AccountRead.model_validate(new_account)
     except Exception as e:
         await db.rollback()
@@ -58,10 +58,10 @@ async def list_accounts(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_accounts(db, skip, limit, search, active, current_user.id)
+        result = await get_accounts(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except Exception as e:
@@ -70,9 +70,9 @@ async def list_accounts(
         raise HTTPException(status_code=500, detail="Error al obtener accountos")
 
 @router.get("/{account_id}", response_model=AccountWithEnumResponse)
-async def read_account(account_id: UUID, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
+async def read_account(account_id: UUID, db: AsyncSession = Depends(get_async_db), uid: str = Depends(current_user_id)):
     try:
-        account = await get_account_by_id(db, account_id, current_user.id)
+        account = await get_account_by_id(db, account_id, uid)
         
         # ✅ Obtener el enum para la respuesta individual
         from app.models.account import AccountTypeEnum
@@ -98,10 +98,10 @@ async def read_account(account_id: UUID, db: AsyncSession = Depends(get_async_db
 async def read_account(
     account_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        account = await get_account_by_id(db, account_id, current_user.id)
+        account = await get_account_by_id(db, account_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return AccountRead.model_validate(account)
     except HTTPException as e:
@@ -124,10 +124,10 @@ async def update_account_endpoint(
     account_id: UUID,
     account_in: AccountUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_account(db, account_id, account_in, current_user.id)
+        updated, log = await update_account(db, account_id, account_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Accounto no encontrada")
         if log:
@@ -158,10 +158,10 @@ async def patch_account_endpoint(
     account_id: UUID,
     account_in: AccountPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_account(db, account_id, account_in, current_user.id)
+        updated, log = await patch_account(db, account_id, account_in, uid)
         if not updated:
             logger.warning(f"[patch_account_endpoint] Accounto {account_id} no encontrada.")
             raise HTTPException(status_code=404, detail="Accounto no encontrado")
@@ -197,7 +197,7 @@ async def patch_account_endpoint(
 async def import_accounts(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -206,7 +206,7 @@ async def import_accounts(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         accounts = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -219,7 +219,7 @@ async def import_accounts(
                     credit=row["credit"],
                     credit_account_id=row["credit_account_id"],                    
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 accounts.append(account)
                 count += 1

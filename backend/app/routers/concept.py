@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -8,7 +8,6 @@ from pydantic import BaseModel
 from app.schemas.concept import ConceptCreate, ConceptUpdate, ConceptRead, ConceptPatch
 from app.crud.concept import create_concept, get_concepts, get_concept_by_id, update_concept, patch_concept
 from app.models.user import User
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
@@ -17,12 +16,13 @@ from app.utils.audit_level import get_audit_level
 
 from sqlalchemy.orm import selectinload
 from app.models.concept import Concept
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 from sqlalchemy import select
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Concepts"])
+router = APIRouter(tags=["Concepts"], dependencies=[Depends(get_current_user)])
 
 # ✅ Schema de respuesta para GET ALL
 class ConceptListResponse(BaseModel):
@@ -42,13 +42,13 @@ class ConceptWithEnumResponse(BaseModel):
         from_attributes = True
 
 @router.post("/", response_model=ConceptRead)
-async def create_concept_endpoint(concept_in: ConceptCreate, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
+async def create_concept_endpoint(concept_in: ConceptCreate, db: AsyncSession = Depends(get_async_db), uid: str = Depends(current_user_id)):
     try:
-        new_concept, log = await create_concept(db, concept_in, current_user.id)
+        new_concept, log = await create_concept(db, concept_in, uid)
         if log:
             db.add(log)
         await db.commit()
-        logger.info(f"Concepto creado: {new_concept.id} por usuario {current_user.id}")
+        logger.info(f"Concepto creado: {new_concept.id} por usuario {uid}")
         
         # ✅ Cargar relaciones para obtener nombres de cuentas
         from sqlalchemy.orm import selectinload
@@ -78,10 +78,10 @@ async def list_concepts(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_concepts(db, skip, limit, search, active, current_user.id)
+        result = await get_concepts(db, skip, limit, search, active, uid)
         
         # ✅ Convertir objetos Concept a ConceptRead con nombres de cuentas
         concepts_with_account_names = []
@@ -103,9 +103,9 @@ async def list_concepts(
         raise HTTPException(status_code=500, detail="Error al obtener conceptos")
 
 @router.get("/{concept_id}", response_model=ConceptWithEnumResponse)
-async def read_concept(concept_id: UUID, db: AsyncSession = Depends(get_async_db), current_user: User = Depends(get_current_user)):
+async def read_concept(concept_id: UUID, db: AsyncSession = Depends(get_async_db), uid: str = Depends(current_user_id)):
     try:
-        concept = await get_concept_by_id(db, concept_id, current_user.id)
+        concept = await get_concept_by_id(db, concept_id, uid)
         
         # ✅ Agregar nombres de cuentas al concepto
         concept_data = ConceptRead.model_validate(concept)
@@ -134,10 +134,10 @@ async def update_concept_endpoint(
     concept_id: UUID,
     concept_in: ConceptUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     try:
-        concept, log = await update_concept(db, concept_id, concept_in, current_user.id)
+        concept, log = await update_concept(db, concept_id, concept_in, uid)
         if not concept:
             raise HTTPException(status_code=404, detail="Concepto no encontrado")
         
@@ -173,10 +173,10 @@ async def patch_concept_endpoint(
     concept_id: UUID,
     concept_in: ConceptPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     try:
-        concept, log = await patch_concept(db, concept_id, concept_in, current_user.id)
+        concept, log = await patch_concept(db, concept_id, concept_in, uid)
         if not concept:
             raise HTTPException(status_code=404, detail="Concepto no encontrado")
         
@@ -215,7 +215,7 @@ async def patch_concept_endpoint(
 async def import_concepts(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -224,7 +224,7 @@ async def import_concepts(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         concepts = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -237,7 +237,7 @@ async def import_concepts(
                     credit=row["credit"],
                     credit_account_id=row["credit_account_id"],                    
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 concepts.append(concept)
                 count += 1

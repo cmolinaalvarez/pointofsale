@@ -1,6 +1,6 @@
 """Router de Usuario con actor_id para auditoría."""
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -13,22 +13,22 @@ import bcrypt
 from app.schemas.user import UserCreate, UserUpdate, UserRead, UserPatch, UserListResponse
 from app.crud.user import create_user, get_users, get_user_by_id, update_user, patch_user
 from app.models.user import User
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["Users"])
+router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_user)])
 
 
 @router.post("/", response_model=UserRead)
 async def create_user_endpoint(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        user, log = await create_user(db, user_in, current_user.id)
+        user, log = await create_user(db, user_in, uid)
         if log:
             db.add(log)
         await db.commit()
@@ -51,10 +51,10 @@ async def list_users(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        data = await get_users(db, skip, limit, search, active, current_user.id)
+        data = await get_users(db, skip, limit, search, active, uid)
         await db.commit()
         return data
     except Exception as e:
@@ -66,10 +66,10 @@ async def list_users(
 async def read_user(
     user_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        user = await get_user_by_id(db, user_id, current_user.id)
+        user = await get_user_by_id(db, user_id, uid)
         await db.commit()
         return UserRead.model_validate(user)
     except HTTPException:
@@ -85,10 +85,10 @@ async def update_user_endpoint(
     user_id: UUID,
     user_in: UserUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_user(db, user_in, user_id, current_user.id)
+        updated, log = await update_user(db, user_in, user_id, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         if log:
@@ -112,10 +112,10 @@ async def patch_user_endpoint(
     user_id: UUID,
     user_in: UserPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_user(db, user_in, user_id, current_user.id)
+        updated, log = await patch_user(db, user_in, user_id, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Usuario no encontrado")
         if log:
@@ -138,7 +138,7 @@ async def patch_user_endpoint(
 async def import_users(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -158,7 +158,7 @@ async def import_users(
                 password=hashed,
                 active=str(row.get("active", "true")).lower() in ("true", "1", "yes", "si"),
                 superuser=str(row.get("superuser", "false")).lower() in ("true", "1", "yes", "si"),
-                user_id=current_user.id,
+                user_id=uid,
             )
             to_add.append(user)
         if not to_add:
@@ -169,7 +169,7 @@ async def import_users(
             action="IMPORT",
             entity="User",
             description=f"Importó {len(to_add)} usuarios",
-            user_id=current_user.id,
+            user_id=uid,
         )
         await db.commit()
         return {"imported": len(to_add)}

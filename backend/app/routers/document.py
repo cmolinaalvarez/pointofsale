@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.document import (
 )
 from app.models.user import User
 from app.models.document import Document
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Documents"])
+router = APIRouter(tags=["Documents"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Documents"])
 async def create_document_endpoint(
     document_in: DocumentCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_document, log = await create_document(db, document_in, current_user.id)
+        new_document, log = await create_document(db, document_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Documento creado exitosamente: {new_document.id} - {new_document.name} por usuario {current_user.id}")
+        logger.info(f"Documento creado exitosamente: {new_document.id} - {new_document.name} por usuario {uid}")
         return DocumentRead.model_validate(new_document)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_documents(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_documents(db, skip, limit, search, active, current_user.id)
+        result = await get_documents(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_documents(
 async def read_document(
     document_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        document = await get_document_by_id(db, document_id, current_user.id)
+        document = await get_document_by_id(db, document_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return DocumentRead.model_validate(document)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_document_endpoint(
     document_id: UUID,
     document_in: DocumentUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_document(db, document_id, document_in, current_user.id)
+        updated, log = await update_document(db, document_id, document_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Tipo de documento no encontrado")
         if log:
@@ -161,10 +161,10 @@ async def patch_document_endpoint(
     document_id: UUID,
     document_in: DocumentPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_document(db, document_id, document_in, current_user.id)
+        updated, log = await patch_document(db, document_id, document_in, uid)
         if not updated:
             logger.warning(f"[patch_document_endpoint] Tipo de documento {document_id} no encontrado.")
             raise HTTPException(status_code=404, detail="Tipo de documento no encontrado")
@@ -200,7 +200,7 @@ async def patch_document_endpoint(
 async def import_documents(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_documents(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         documents = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -220,7 +220,7 @@ async def import_documents(
                     prefix=row["prefix"],
                     document_type=row["document_type"],
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 documents.append(document)
                 count += 1

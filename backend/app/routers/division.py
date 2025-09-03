@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -14,17 +14,17 @@ from app.crud.division import (
 from app.models.user import User
 from app.models.division import Division
 from app.models.country import Country
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Divisions"])
+router = APIRouter(tags=["Divisions"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -32,15 +32,15 @@ router = APIRouter(tags=["Divisions"])
 async def create_division_endpoint(
     division_in: DivisionCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_division, log = await create_division(db, division_in, current_user.id)
+        new_division, log = await create_division(db, division_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"División creada exitosamente: {new_division.id} - {new_division.name} por usuario {current_user.id}")
+        logger.info(f"División creada exitosamente: {new_division.id} - {new_division.name} por usuario {uid}")
         return DivisionRead.model_validate(new_division)
     except IntegrityError as e:
         await db.rollback()
@@ -74,10 +74,10 @@ async def list_divisions(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_divisions(db, skip, limit, search, active, current_user.id)
+        result = await get_divisions(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -102,10 +102,10 @@ async def list_divisions(
 async def read_division(
     division_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        division = await get_division_by_id(db, division_id, current_user.id)
+        division = await get_division_by_id(db, division_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return DivisionRead.model_validate(division)
     except HTTPException as e:
@@ -128,10 +128,10 @@ async def update_division_endpoint(
     division_id: UUID,
     division_in: DivisionUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_division(db, division_id, division_in, current_user.id)
+        updated, log = await update_division(db, division_id, division_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="División no encontrada")
         if log:
@@ -162,10 +162,10 @@ async def patch_division_endpoint(
     division_id: UUID,
     division_in: DivisionPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_division(db, division_id, division_in, current_user.id)
+        updated, log = await patch_division(db, division_id, division_in, uid)
         if not updated:
             logger.warning(f"[patch_division_endpoint] División {division_id} no encontrada.")
             raise HTTPException(status_code=404, detail="División no encontrada")
@@ -201,7 +201,7 @@ async def patch_division_endpoint(
 async def import_divisiones(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try: 
         content = await file.read()
@@ -210,7 +210,7 @@ async def import_divisiones(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         divisions = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             result = await db.execute(select(Country).where(Country.country_code == row["country_code"]))
@@ -224,7 +224,7 @@ async def import_divisiones(
                         country_code=row["country_code"],        
                         iso_3166_2=row["iso_3166_2"],
                         active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                        user_id=current_user.id
+                        user_id=uid
                     )
                     divisions.append(division)
                     count += 1

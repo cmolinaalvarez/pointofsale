@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.unit import (
 )
 from app.models.user import User
 from app.models.unit import Unit
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Units"])
+router = APIRouter(tags=["Units"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Units"])
 async def create_unit_endpoint(
     unit_in: UnitCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_unit, log = await create_unit(db, unit_in, current_user.id)
+        new_unit, log = await create_unit(db, unit_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Unidad creada exitosamente: {new_unit.id} - {new_unit.name} por usuario {current_user.id}")
+        logger.info(f"Unidad creada exitosamente: {new_unit.id} - {new_unit.name} por usuario {uid}")
         return UnitRead.model_validate(new_unit)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_unidades(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_units(db, skip, limit, search, active, current_user.id)
+        result = await get_units(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_unidades(
 async def read_unit(
     unit_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        unit = await get_unit_by_id(db, unit_id, current_user.id)
+        unit = await get_unit_by_id(db, unit_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return UnitRead.model_validate(unit)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_unit_endpoint(
     unit_id: UUID,
     unit_in: UnitUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_unit(db, unit_id, unit_in, current_user.id)
+        updated, log = await update_unit(db, unit_id, unit_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Unidad no encontrada")
         if log:
@@ -161,10 +161,10 @@ async def patch_unit_endpoint(
     unit_id: UUID,
     unit_in: UnitPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_unit(db, unit_id, unit_in, current_user.id)
+        updated, log = await patch_unit(db, unit_id, unit_in, uid)
         if not updated:
             logger.warning(f"[patch_unit_endpoint] Unidad {unit_id} no encontrada.")
             raise HTTPException(status_code=404, detail="Unidad no encontrada")
@@ -200,7 +200,7 @@ async def patch_unit_endpoint(
 async def import_unidades(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_unidades(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         unidades = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -218,7 +218,7 @@ async def import_unidades(
                     description=row.get("description", ""),
                     symbol=row["symbol"],
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 unidades.append(unit)
                 count += 1

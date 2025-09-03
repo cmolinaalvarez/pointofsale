@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.brand import (
 )
 from app.models.user import User
 from app.models.brand import Brand
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Brands"])
+router = APIRouter(tags=["Brands"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Brands"])
 async def create_brand_endpoint(
     brand_in: BrandCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_brand, log = await create_brand(db, brand_in, current_user.id)
+        new_brand, log = await create_brand(db, brand_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Marca creada exitosamente: {new_brand.id} - {new_brand.name} por usuario {current_user.id}")
+        logger.info(f"Marca creada exitosamente: {new_brand.id} - {new_brand.name} por usuario {uid}")
         return BrandRead.model_validate(new_brand)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_brands(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_brands(db, skip, limit, search, active, current_user.id)
+        result = await get_brands(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_brands(
 async def read_brand(
     brand_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        brand = await get_brand_by_id(db, brand_id, current_user.id)
+        brand = await get_brand_by_id(db, brand_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return BrandRead.model_validate(brand)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_brand_endpoint(
     brand_id: UUID,
     brand_in: BrandUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_brand(db, brand_id, brand_in, current_user.id)
+        updated, log = await update_brand(db, brand_id, brand_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Marca no encontrada")
         if log:
@@ -161,10 +161,10 @@ async def patch_brand_endpoint(
     brand_id: UUID,
     brand_in: BrandPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_brand(db, brand_id, brand_in, current_user.id)
+        updated, log = await patch_brand(db, brand_id, brand_in, uid)
         if not updated:
             logger.warning(f"[patch_brand_endpoint] Marca {brand_id} no encontrada.")
             raise HTTPException(status_code=404, detail="Marca no encontrada")
@@ -200,7 +200,7 @@ async def patch_brand_endpoint(
 async def import_brands(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_brands(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         brands = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -218,7 +218,7 @@ async def import_brands(
                     name=row["name"],
                     description=row.get("description", ""),
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 brands.append(brand)
                 count += 1

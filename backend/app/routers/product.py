@@ -1,5 +1,5 @@
 # app/routers/products.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -11,7 +11,6 @@ from io import StringIO
 import logging
 
 from app.core.security import get_async_db 
-from app.dependencies.current_user import get_current_user
 from app.models.user import User
 from app.models.product import Product
 from app.schemas.product import (
@@ -22,10 +21,11 @@ from app.crud.product import (
 )
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Products"])
+router = APIRouter(tags=["Products"], dependencies=[Depends(get_current_user)])
 
 
 # ==============================
@@ -35,16 +35,16 @@ router = APIRouter(tags=["Products"])
 async def create_product_endpoint(
     product_in: ProductCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_product, log = await create_product(db, product_in, current_user.id)
+        new_product, log = await create_product(db, product_in, uid)
         if log:
             db.add(log)
         await db.commit()
         logger.info(
             "Producto creado: %s - %s por usuario %s",
-            new_product.id, new_product.name, current_user.id
+            new_product.id, new_product.name, uid
         )
         return ProductRead.model_validate(new_product)
     except IntegrityError as e:
@@ -75,10 +75,10 @@ async def list_products(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),  # Usar get_db corregido
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_products(db, skip, limit, search, active, current_user.id)
+        result = await get_products(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -98,10 +98,10 @@ async def list_products(
 async def read_product(
     product_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        product = await get_product_by_id(db, product_id, current_user.id)
+        product = await get_product_by_id(db, product_id, uid)
         await db.commit()   # por si hubo auditoría
         return ProductRead.model_validate(product)
     except HTTPException as e:
@@ -122,10 +122,10 @@ async def update_product_endpoint(
     product_id: UUID,
     product_in: ProductUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_product(db, product_id, product_in, current_user.id)
+        updated, log = await update_product(db, product_id, product_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Producto no encontrado")
         if log:
@@ -151,10 +151,10 @@ async def patch_product_endpoint(
     product_id: UUID,
     product_in: ProductPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_product(db, product_id, product_in, current_user.id)
+        updated, log = await patch_product(db, product_id, product_in, uid)
         if not updated:
             logger.warning("[patch_product_endpoint] Producto %s no encontrado.", product_id)
             raise HTTPException(status_code=404, detail="Producto no encontrado")
@@ -184,7 +184,7 @@ async def patch_product_endpoint(
 async def import_products(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     CSV esperado (headers típicos, todos opcionales salvo code, name, cost, price):
@@ -233,7 +233,7 @@ async def import_products(
                     category_id=_to_uuid(row.get("category_id")),
                     brand_id=_to_uuid(row.get("brand_id")),
                     unit_id=_to_uuid(row.get("unit_id")),
-                    user_id=current_user.id,
+                    user_id=uid,
                     cost=_to_decimal(row.get("cost")),
                     price=_to_decimal(row.get("price")),
                     percent_tax=float(row.get("percent_tax") or 0),
@@ -264,7 +264,7 @@ async def import_products(
                 action="IMPORT",
                 entity="Product",
                 description=f"Importación masiva: {len(products)} productos importados.",
-                user_id=current_user.id,
+                user_id=uid,
             )
 
         await db.commit()

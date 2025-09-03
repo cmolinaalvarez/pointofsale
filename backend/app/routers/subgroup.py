@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.subgroup import (
 )
 from app.models.user import User
 from app.models.subgroup import SubGroup
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["SubGroups"])
+router = APIRouter(tags=["SubGroups"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["SubGroups"])
 async def create_subgroup_endpoint(
     subgroup_in: SubGroupCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_subgroup, log = await create_subgroup(db, subgroup_in, current_user.id)
+        new_subgroup, log = await create_subgroup(db, subgroup_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Subgrupo creado exitosamente: {new_subgroup.id} - {new_subgroup.name} por usuario {current_user.id}")
+        logger.info(f"Subgrupo creado exitosamente: {new_subgroup.id} - {new_subgroup.name} por usuario {uid}")
         return SubGroupRead.model_validate(new_subgroup)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_subgroups(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_subgroups(db, skip, limit, search, active, current_user.id)
+        result = await get_subgroups(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_subgroups(
 async def read_subgroup(
     subgroup_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        subgroup = await get_subgroup_by_id(db, subgroup_id, current_user.id)
+        subgroup = await get_subgroup_by_id(db, subgroup_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return SubGroupRead.model_validate(subgroup)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_subgroup_endpoint(
     subgroup_id: UUID,
     subgroup_in: SubGroupUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_subgroup(db, subgroup_id, subgroup_in, current_user.id)
+        updated, log = await update_subgroup(db, subgroup_id, subgroup_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Subgrupo no encontrado")
         if log:
@@ -161,10 +161,10 @@ async def patch_subgroup_endpoint(
     subgroup_id: UUID,
     subgroup_in: SubGroupPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_subgroup(db, subgroup_id, subgroup_in, current_user.id)
+        updated, log = await patch_subgroup(db, subgroup_id, subgroup_in, uid)
         if not updated:
             logger.warning(f"[patch_subgroup_endpoint] Subgrupo {subgroup_id} no encontrado.")
             raise HTTPException(status_code=404, detail="Subgrupo no encontrado")
@@ -200,7 +200,7 @@ async def patch_subgroup_endpoint(
 async def import_subgroups(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_subgroups(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         subgroups = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -219,7 +219,7 @@ async def import_subgroups(
                     description=row.get("description", ""),
                     group_id= row["group_id"],
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 subgroups.append(subgroup)
                 count += 1

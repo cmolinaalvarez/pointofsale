@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.warehouse import (
 )
 from app.models.user import User
 from app.models.warehouse import Warehouse
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Warehouses"])
+router = APIRouter(tags=["Warehouses"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Warehouses"])
 async def create_warehouse_endpoint(
     warehouse_in: WarehouseCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_warehouse, log = await create_warehouse(db, warehouse_in, current_user.id)
+        new_warehouse, log = await create_warehouse(db, warehouse_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Bodega creada exitosamente: {new_warehouse.id} - {new_warehouse.name} por usuario {current_user.id}")
+        logger.info(f"Bodega creada exitosamente: {new_warehouse.id} - {new_warehouse.name} por usuario {uid}")
         return WarehouseRead.model_validate(new_warehouse)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_warehouses(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_warehouses(db, skip, limit, search, active, current_user.id)
+        result = await get_warehouses(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_warehouses(
 async def read_warehouse(
     warehouse_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        warehouse = await get_warehouse_by_id(db, warehouse_id, current_user.id)
+        warehouse = await get_warehouse_by_id(db, warehouse_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return WarehouseRead.model_validate(warehouse)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_warehouse_endpoint(
     warehouse_id: UUID,
     warehouse_in: WarehouseUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_warehouse(db, warehouse_id, warehouse_in, current_user.id)
+        updated, log = await update_warehouse(db, warehouse_id, warehouse_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Bodega no encontrada")
         if log:
@@ -161,10 +161,10 @@ async def patch_warehouse_endpoint(
     warehouse_id: UUID,
     warehouse_in: WarehousePatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_warehouse(db, warehouse_id, warehouse_in, current_user.id)
+        updated, log = await patch_warehouse(db, warehouse_id, warehouse_in, uid)
         if not updated:
             logger.warning(f"[patch_warehouse_endpoint] Bodega {warehouse_id} no encontrada.")
             raise HTTPException(status_code=404, detail="Bodega no encontrada")
@@ -200,7 +200,7 @@ async def patch_warehouse_endpoint(
 async def import_warehouses(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_warehouses(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         warehouses = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -219,7 +219,7 @@ async def import_warehouses(
                     description=row.get("description", ""),
                     location=row.get("location"),
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 warehouses.append(warehouse)
                 count += 1

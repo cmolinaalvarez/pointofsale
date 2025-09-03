@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.setting import (
 )
 from app.models.user import User
 from app.models.setting import Setting
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 import csv
 from io import StringIO
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Settings"])
+router = APIRouter(tags=["Settings"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Settings"])
 async def create_setting_endpoint(
     setting_in: SettingCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_setting, log = await create_setting(db, setting_in, current_user.id)
+        new_setting, log = await create_setting(db, setting_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Marca creada exitosamente: {new_setting.id} - {new_setting.description} por usuario {current_user.id}")
+        logger.info(f"Marca creada exitosamente: {new_setting.id} - {new_setting.description} por usuario {uid}")
         return SettingRead.model_validate(new_setting)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_settings(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_settings(db, skip, limit, search, active, current_user.id)
+        result = await get_settings(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_settings(
 async def read_setting(
     setting_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        setting = await get_setting_by_id(db, setting_id, current_user.id)
+        setting = await get_setting_by_id(db, setting_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return SettingRead.model_validate(setting)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_setting_endpoint(
     setting_id: UUID,
     setting_in: SettingUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_setting(db, setting_id, setting_in, current_user.id)
+        updated, log = await update_setting(db, setting_id, setting_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Marca no encontrada")
         if log:
@@ -162,10 +162,10 @@ async def patch_setting_endpoint(
     setting_id: UUID,
     setting_in: SettingPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_setting(db, setting_id, setting_in, current_user.id)
+        updated, log = await patch_setting(db, setting_id, setting_in, uid)
         if not updated:
             logger.warning(f"[patch_setting_endpoint] Marca {setting_id} no encontrada.")
             raise HTTPException(status_code=404, detail="Marca no encontrada")
@@ -201,7 +201,7 @@ async def patch_setting_endpoint(
 async def import_settings(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     import csv
     from io import StringIO
@@ -215,7 +215,7 @@ async def import_settings(
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         settings = []
         count = 0
-        user_id = current_user.id
+        user_id = uid
         for row in csv_reader:
             try:
                 setting = Setting(

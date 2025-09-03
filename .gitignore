@@ -10,6 +10,11 @@
 /backend/**/*.sqlite3
 /backend/**/*.db
 
+#===== PATCHs =====
+/backend/**/*.patch
+
+
+
 # Virtual environments
 /backend/.venv/
 /backend/venv/

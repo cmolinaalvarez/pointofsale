@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -14,17 +14,17 @@ from app.crud.municipality import (
 from app.models.user import User
 from app.models.municipality import Municipality
 from app.models.division import Division
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Municipalities"])
+router = APIRouter(tags=["Municipalities"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -32,15 +32,15 @@ router = APIRouter(tags=["Municipalities"])
 async def create_municipality_endpoint(
     municipality_in: MunicipalityCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_municipality, log = await create_municipality(db, municipality_in, current_user.id)
+        new_municipality, log = await create_municipality(db, municipality_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"municipio creada exitosamente: {new_municipality.id} - {new_municipality.name} por usuario {current_user.id}")
+        logger.info(f"municipio creada exitosamente: {new_municipality.id} - {new_municipality.name} por usuario {uid}")
         return MunicipalityRead.model_validate(new_municipality)
     except IntegrityError as e:
         await db.rollback()
@@ -74,10 +74,10 @@ async def list_municipalities(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_municipalities(db, skip, limit, search, active, current_user.id)
+        result = await get_municipalities(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -102,10 +102,10 @@ async def list_municipalities(
 async def read_municipality(
     municipality_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        municipality = await get_municipality_by_id(db, municipality_id, current_user.id)
+        municipality = await get_municipality_by_id(db, municipality_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return MunicipalityRead.model_validate(municipality)
     except HTTPException as e:
@@ -128,10 +128,10 @@ async def update_municipality_endpoint(
     municipality_id: UUID,
     municipality_in: MunicipalityUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_municipality(db, municipality_id, municipality_in, current_user.id)
+        updated, log = await update_municipality(db, municipality_id, municipality_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Municipio no encontrado")
         if log:
@@ -162,10 +162,10 @@ async def patch_municipality_endpoint(
     municipality_id: UUID,
     municipality_in: MunicipalityPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_municipality(db, municipality_id, municipality_in, current_user.id)
+        updated, log = await patch_municipality(db, municipality_id, municipality_in, uid)
         if not updated:
             logger.warning(f"[patch_municipality_endpoint] municipio {municipality_id} no encontrado.")
             raise HTTPException(status_code=404, detail="municipio no encontrado")
@@ -201,7 +201,7 @@ async def patch_municipality_endpoint(
 async def import_municipalities(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -210,7 +210,7 @@ async def import_municipalities(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         municipalitys = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             result = await db.execute(select(Division).where(Division.code == row["division_code"]))
@@ -222,7 +222,7 @@ async def import_municipalities(
                         name=row["name"],
                         division_id=division.id,
                         active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                        user_id=current_user.id
+                        user_id=uid
                     )
                     municipalitys.append(municipality)
                     count += 1

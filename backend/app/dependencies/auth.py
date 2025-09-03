@@ -12,7 +12,6 @@ oauth2 = OAuth2PasswordBearer(
     scopes={
         "brands:read": "Leer marcas",
         "brands:write": "Crear/editar marcas",
-        # Agrega aquí más scopes si los usas: categories:read/write, products:read/write, etc.
     },
 )
 
@@ -33,10 +32,7 @@ async def get_current_user(
     return user
 
 def require_scopes(required: Sequence[str]):
-    async def _checker(
-        request: Request,
-        _user: User = Depends(get_current_user),
-    ):
+    async def _checker(request: Request, _user: User = Depends(get_current_user)):
         token_scopes = getattr(request.state, "scopes", set())
         if any(s not in token_scopes for s in required):
             raise HTTPException(status_code=403, detail="Permisos insuficientes")

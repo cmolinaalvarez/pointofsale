@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
@@ -13,17 +13,17 @@ from app.crud.group import (
 )
 from app.models.user import User
 from app.models.group import Group
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 import csv
 from io import StringIO
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Groups"])
+router = APIRouter(tags=["Groups"], dependencies=[Depends(get_current_user)])
 # ==============================
 # CREATE - POST
 # ==============================
@@ -31,15 +31,15 @@ router = APIRouter(tags=["Groups"])
 async def create_group_endpoint(
     group_in: GroupCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_group, log = await create_group(db, group_in, current_user.id)
+        new_group, log = await create_group(db, group_in, uid)
         if log:
             db.add(log)
         await db.commit()
         # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
-        logger.info(f"Grupo creado exitosamente: {new_group.id} - {new_group.name} por usuario {current_user.id}")
+        logger.info(f"Grupo creado exitosamente: {new_group.id} - {new_group.name} por usuario {uid}")
         return GroupRead.model_validate(new_group)
     except IntegrityError as e:
         await db.rollback()
@@ -73,10 +73,10 @@ async def list_groups(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_groups(db, skip, limit, search, active, current_user.id)
+        result = await get_groups(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -101,10 +101,10 @@ async def list_groups(
 async def read_group(
     group_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        group = await get_group_by_id(db, group_id, current_user.id)
+        group = await get_group_by_id(db, group_id, uid)
         await db.commit()   # Registrar la auditoría si la hubo
         return GroupRead.model_validate(group)
     except HTTPException as e:
@@ -127,10 +127,10 @@ async def update_group_endpoint(
     group_id: UUID,
     group_in: GroupUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_group(db, group_id, group_in, current_user.id)
+        updated, log = await update_group(db, group_id, group_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Grupo no encontrado")
         if log:
@@ -161,10 +161,10 @@ async def patch_group_endpoint(
     group_id: UUID,
     group_in: GroupPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_group(db, group_id, group_in, current_user.id)
+        updated, log = await patch_group(db, group_id, group_in, uid)
         if not updated:
             logger.warning(f"[patch_group_endpoint] Grupo {group_id} no encontrado.")
             raise HTTPException(status_code=404, detail="Grupo no encontrado")
@@ -200,7 +200,7 @@ async def patch_group_endpoint(
 async def import_groups(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
         content = await file.read()
@@ -209,7 +209,7 @@ async def import_groups(
             csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
             logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
         groups = []
-        user_id = current_user.id
+        user_id = uid
         count = 0
         for row in csv_reader:
             try:
@@ -219,7 +219,7 @@ async def import_groups(
                     description=row.get("description", ""),
                     subcategory_id= row["subcategory_id"],
                     active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 groups.append(group)
                 count += 1

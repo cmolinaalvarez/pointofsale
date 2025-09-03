@@ -4,7 +4,7 @@ API Router for Role management (Simplified)
 
 from typing import List, Optional
 from uuid import UUID
-from fastapi import APIRouter, Depends, HTTPException, Query, status, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 import csv
 from io import StringIO
 import logging
@@ -15,17 +15,17 @@ from app.models.role import Role, RoleType
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.core.security import get_async_db
-from app.dependencies.current_user import get_current_user
 # from app.core.oauth2_middleware import require_scope  # Comentado temporalmente
 from app.models.user import User  # Usar el modelo User correcto
 from app.crud.role import role_crud
 from app.schemas.role import (
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     RoleCreate, RoleUpdate, RolePatch, RoleRead, RoleListResponse
 )
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["Roles"])
+router = APIRouter(tags=["Roles"], dependencies=[Depends(get_current_user)])
 
 
 # ======================
@@ -41,7 +41,7 @@ async def get_roles(
     active: Optional[bool] = Query(None, description="Filtrar por estado activo"),
     search: Optional[str] = Query(None, description="Búsqueda en código, nombre o descripción"),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     """
     Obtener lista de roles con filtros opcionales
@@ -70,7 +70,7 @@ async def get_roles(
 async def get_role(
     role_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     """
     Obtener un rol específico por ID
@@ -89,11 +89,11 @@ async def get_role(
 async def create_role(
     role_in: RoleCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     """Crear un nuevo rol"""
     try:
-        role = await role_crud.create(db, role_in, current_user.id)
+        role = await role_crud.create(db, role_in, uid)
         return role
         
     except ValueError as e:
@@ -114,11 +114,11 @@ async def update_role(
     role_id: UUID,
     role_in: RoleUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     """Actualizar un rol existente"""
     try:
-        updated_role, log = await role_crud.update(db, role_id, role_in, current_user.id)
+        updated_role, log = await role_crud.update(db, role_id, role_in, uid)
         if not updated_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -144,13 +144,13 @@ async def patch_role(
     role_id: UUID,
     role_in: RolePatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user)
+    uid: str = Depends(current_user_id)
 ):
     """
     Actualización parcial de un rol
     """
     try:
-        updated_role, log = await role_crud.patch(db, role_id, role_in, current_user.id)
+        updated_role, log = await role_crud.patch(db, role_id, role_in, uid)
         if not updated_role:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
@@ -173,7 +173,7 @@ async def patch_role(
 async def import_roles(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     def as_bool(v, default=False):
         return str(v).strip().lower() in {"true","1","yes","si","y","t"} if v is not None else default
@@ -233,7 +233,7 @@ async def import_roles(
                     scopes=parse_scopes(row.get("scopes")),
                     is_admin=as_bool(row.get("is_admin"), False),
                     active=as_bool(row.get("active"), True),
-                    user_id=current_user.id,
+                    user_id=uid,
                 )
                 roles.append(role)
                 seen_in_file.add(key)
@@ -248,7 +248,7 @@ async def import_roles(
             await log_action(
                 db, action="IMPORT", entity="Role",
                 description=f"Importación masiva: {len(roles)} roles importados (omitidos por duplicado: {skipped_dups}).",
-                user_id=current_user.id
+                user_id=uid
             )
 
         try:

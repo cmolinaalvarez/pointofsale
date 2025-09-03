@@ -1,5 +1,5 @@
 # app/routers/third_partys.py
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -11,7 +11,6 @@ from io import StringIO
 import logging
 
 from app.core.security import get_async_db
-from app.dependencies.current_user import get_current_user
 from app.models.user import User
 from app.models.third_party import ThirdParty
 from app.schemas.third_party import (
@@ -22,10 +21,11 @@ from app.crud.third_party import (
 )
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["ThirdParties"])
+router = APIRouter(tags=["ThirdParties"], dependencies=[Depends(get_current_user)])
 
 
 # ==============================
@@ -35,16 +35,16 @@ router = APIRouter(tags=["ThirdParties"])
 async def create_third_party_endpoint(
     third_party_in: ThirdPartyCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        new_third_party, log = await create_third_party(db, third_party_in, current_user.id)
+        new_third_party, log = await create_third_party(db, third_party_in, uid)
         if log:
             db.add(log)
         await db.commit()
         logger.info(
             "Tercero creado: %s - %s por usuario %s",
-            new_third_party.id, new_third_party.name, current_user.id
+            new_third_party.id, new_third_party.name, uid
         )
         return ThirdPartyRead.model_validate(new_third_party)
     except IntegrityError as e:
@@ -74,10 +74,10 @@ async def list_third_parties(
     search: Optional[str] = None,
     active: Optional[bool] = None,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        result = await get_third_parties(db, skip, limit, search, active, current_user.id)
+        result = await get_third_parties(db, skip, limit, search, active, uid)
         await db.commit()
         return result
     except SQLAlchemyError as e:
@@ -97,10 +97,10 @@ async def list_third_parties(
 async def read_third_party(
     third_party_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        third_party = await get_third_party_by_id(db, third_party_id, current_user.id)
+        third_party = await get_third_party_by_id(db, third_party_id, uid)
         await db.commit()   # por si hubo auditoría
         return ThirdPartyRead.model_validate(third_party)
     except HTTPException as e:
@@ -121,10 +121,10 @@ async def update_third_party_endpoint(
     third_party_id: UUID,
     third_party_in: ThirdPartyUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await update_third_party(db, third_party_id, third_party_in, current_user.id)
+        updated, log = await update_third_party(db, third_party_id, third_party_in, uid)
         if not updated:
             raise HTTPException(status_code=404, detail="Tercero no encontrado")
         if log:
@@ -150,10 +150,10 @@ async def patch_third_party_endpoint(
     third_party_id: UUID,
     third_party_in: ThirdPartyPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     try:
-        updated, log = await patch_third_party(db, third_party_id, third_party_in, current_user.id)
+        updated, log = await patch_third_party(db, third_party_id, third_party_in, uid)
         if not updated:
             logger.warning("[patch_third_party_endpoint] Tercero %s no encontrado.", third_party_id)
             raise HTTPException(status_code=404, detail="Tercero no encontrado")
@@ -183,7 +183,7 @@ async def patch_third_party_endpoint(
 async def import_third_parties(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     CSV esperado (headers típicos, todos opcionales salvo code, name, cost, price):
@@ -233,7 +233,7 @@ async def import_third_parties(
                     country_id=_to_uuid(row.get("country_id")),
                     nit=row.get("nit"),
                     active=_to_bool(row.get("active")) if row.get("active") is not None else True,
-                    user_id=current_user.id
+                    user_id=uid
                 )
                 third_partys.append(third_party)
             except KeyError as ke:
@@ -257,7 +257,7 @@ async def import_third_parties(
                 action="IMPORT",
                 entity="ThirdParty",
                 description=f"Importación masiva: {len(third_partys)} terceros importados.",
-                user_id=current_user.id,
+                user_id=uid,
             )
 
         await db.commit()

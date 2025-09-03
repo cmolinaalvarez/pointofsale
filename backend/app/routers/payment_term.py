@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 from uuid import UUID
@@ -16,15 +16,15 @@ from app.crud.payment_term import (
     update_payment_term, patch_payment_term, delete_payment_term
 )
 from app.models.user import User
-from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
 
-router = APIRouter(tags=["PaymentTerms"])
+router = APIRouter(tags=["PaymentTerms"], dependencies=[Depends(get_current_user)])
 
 # ==============================
 # CREATE - POST
@@ -33,14 +33,14 @@ router = APIRouter(tags=["PaymentTerms"])
 async def create_payment_term_endpoint(
     payment_term_in: PaymentTermCreate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Crear un nuevo término de pago
     """
     try:
         new_payment_term, log = await create_payment_term(
-            db, payment_term_in.model_dump(), current_user.id
+            db, payment_term_in.model_dump(), uid
         )
         
         if log:
@@ -49,7 +49,7 @@ async def create_payment_term_endpoint(
         await db.commit()
         await db.refresh(new_payment_term)
         
-        logger.info(f"Término de pago creado exitosamente: {new_payment_term.id} - {new_payment_term.name} por usuario {current_user.id}")
+        logger.info(f"Término de pago creado exitosamente: {new_payment_term.id} - {new_payment_term.name} por usuario {uid}")
         return PaymentTermRead.model_validate(new_payment_term)
         
     except HTTPException:
@@ -87,13 +87,13 @@ async def list_payment_terms(
     search: Optional[str] = Query(None, description="Término de búsqueda"),
     active: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Listar términos de pago con paginación y filtros
     """
     try:
-        result = await get_payment_terms(db, skip, limit, search, active, current_user.id)
+        result = await get_payment_terms(db, skip, limit, search, active, uid)
         await db.commit()
         return result
         
@@ -119,13 +119,13 @@ async def list_payment_terms(
 async def read_payment_term(
     payment_term_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Obtener un término de pago por ID
     """
     try:
-        payment_term = await get_payment_term_by_id(db, payment_term_id, current_user.id)
+        payment_term = await get_payment_term_by_id(db, payment_term_id, uid)
         await db.commit()
         return PaymentTermRead.model_validate(payment_term)
         
@@ -148,14 +148,14 @@ async def update_payment_term_endpoint(
     payment_term_id: UUID,
     payment_term_in: PaymentTermUpdate,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Actualizar un término de pago
     """
     try:
         updated, log = await update_payment_term(
-            db, payment_term_id, payment_term_in.model_dump(), current_user.id
+            db, payment_term_id, payment_term_in.model_dump(), uid
         )
         
         if not updated:
@@ -198,14 +198,14 @@ async def patch_payment_term_endpoint(
     payment_term_id: UUID,
     payment_term_in: PaymentTermPatch,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Actualizar parcialmente un término de pago
     """
     try:
         updated, log = await patch_payment_term(
-            db, payment_term_id, payment_term_in.model_dump(exclude_unset=True), current_user.id
+            db, payment_term_id, payment_term_in.model_dump(exclude_unset=True), uid
         )
         
         if not updated:
@@ -248,13 +248,13 @@ async def patch_payment_term_endpoint(
 async def delete_payment_term_endpoint(
     payment_term_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Eliminar un término de pago
     """
     try:
-        deleted = await delete_payment_term(db, payment_term_id, current_user.id)
+        deleted = await delete_payment_term(db, payment_term_id, uid)
         
         if not deleted:
             raise HTTPException(
@@ -282,7 +282,7 @@ async def delete_payment_term_endpoint(
 async def import_payment_terms(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Importar términos de pago desde archivo CSV
@@ -316,7 +316,7 @@ async def import_payment_terms(
                 }
                 
                 # Crear término de pago
-                payment_term = await create_payment_term(db, payment_term_data, current_user.id)
+                payment_term = await create_payment_term(db, payment_term_data, uid)
                 payment_terms.append(payment_term)
                 imported_count += 1
                 
@@ -334,7 +334,7 @@ async def import_payment_terms(
                 action="IMPORT",
                 entity="PaymentTerm",
                 description=f"Importación masiva: {imported_count} términos de pago importados.",
-                user_id=current_user.id
+                user_id=uid
             )
             
         await db.commit()

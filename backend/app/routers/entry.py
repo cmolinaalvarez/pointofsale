@@ -22,7 +22,7 @@
 # IMPORTS DEL ECOSISTEMA
 # ------------------------------
 from sqlalchemy import select, func          # select() para consultas, func.* para funciones SQL (MAX, COALESCE, DATE_PART, etc.)
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 #  - APIRouter: agrupa rutas bajo un prefijo y etiquetas.
 #  - Depends: inyección de dependencias (DB, usuario actual, etc.).
 #  - HTTPException: excepciones HTTP con status code controlado.
@@ -41,7 +41,6 @@ import logging                              # Logging estructurado para diagnós
 # IMPORTS DE LA APLICACIÓN
 # ------------------------------
 from app.core.security import get_async_db  # Proveedor de AsyncSession (inyección FastAPI).
-from app.dependencies.current_user import get_current_user  # Proveedor del usuario autenticado.
 from app.models.user import User            # Modelo de usuario (para tipos y acceso a su id).
 
 # Utilidades estándar
@@ -72,6 +71,7 @@ from app.schemas.entry import (
 
 # CRUD de entries (capa de acceso a datos con reglas específicas)
 from app.crud.entry import (
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     create_entry,
     get_entries,
     get_entry,
@@ -86,7 +86,7 @@ from app.utils.audit_level import get_audit_level
 # CONFIGURACIÓN DE RUTAS Y LOGGING
 # ------------------------------
 logger = logging.getLogger(__name__)            # Logger de módulo (hereda nivel/handlers globales).
-router = APIRouter(tags=["Entries"])  # Todas las rutas cuelgan de /entries
+router = APIRouter(tags=["Entries"], dependencies=[Depends(get_current_user)])  # Todas las rutas cuelgan de /entries
 
 # =============================================================================
 # CREATE - POST
@@ -95,7 +95,7 @@ router = APIRouter(tags=["Entries"])  # Todas las rutas cuelgan de /entries
 async def create_entry_endpoint(
     entry_in: EntryCreate,                         # Cuerpo del request (validado por pydantic).
     db: AsyncSession = Depends(get_async_db),      # Sesión de DB inyectada.
-    current_user: User = Depends(get_current_user) # Usuario autenticado (para auditoría y ownership).
+    uid: str = Depends(current_user_id) # Usuario autenticado (para auditoría y ownership).
 ):
     """
     Crea una entrada (Entry) usando la capa CRUD.
@@ -103,8 +103,8 @@ async def create_entry_endpoint(
     """
     try:
         # Delegamos la lógica de creación a la capa CRUD (incluye validaciones y commit).
-        new_entry = await create_entry(db, entry_in, current_user.id)
-        logger.info("Entrada creada: %s por usuario %s", new_entry.id, current_user.id)
+        new_entry = await create_entry(db, entry_in, uid)
+        logger.info("Entrada creada: %s por usuario %s", new_entry.id, uid)
         # Devolvemos el objeto serializado al esquema de respuesta.
         return EntryRead.model_validate(new_entry)
 
@@ -145,7 +145,7 @@ async def list_entries(
     skip: int = Query(0, ge=0),                   # Paginación: índice inicial (>=0).
     limit: int = Query(100, ge=1, le=1000),       # Paginación: cantidad (1..1000).
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Lista entradas (sin 'total' agregado).
@@ -154,7 +154,7 @@ async def list_entries(
     """
     try:
         # Obtenemos entradas de la capa CRUD, potencialmente filtradas por user_id.
-        items = await get_entries(db, skip=skip, limit=limit, user_id=current_user.id)
+        items = await get_entries(db, skip=skip, limit=limit, user_id=uid)
 
         # Importante: si el CRUD hace flush para auditoría, aquí confirmamos con commit.
         await db.commit()
@@ -180,7 +180,7 @@ async def list_entries(
 async def read_entry(
     entry_id: UUID,                                  # Path param validado por FastAPI (UUID correcto).
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Obtiene una entrada por ID.
@@ -189,7 +189,7 @@ async def read_entry(
     """
     try:
         # Recuperamos la entrada; podría aplicar filtros de seguridad por user_id.
-        entry = await get_entry(db, entry_id, user_id=current_user.id)
+        entry = await get_entry(db, entry_id, user_id=uid)
 
         if not entry:
             # No existe o no es accesible.
@@ -218,14 +218,14 @@ async def read_entry(
 async def deactivate_entry(
     entry_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Desactiva una entrada (soft-delete o marca 'active=False') y retorna el stock resultante.
     La lógica concreta reside en el CRUD `deactivate_entry_and_return_stock`.
     """
     # La función retorna (entry, stock_diff) — aquí solo devolvemos la entry.
-    entry, _ = await deactivate_entry_and_return_stock(db, entry_id, user_id=current_user.id)
+    entry, _ = await deactivate_entry_and_return_stock(db, entry_id, user_id=uid)
 
     if entry is None:
         raise HTTPException(status_code=404, detail="Entrada no encontrada")
@@ -303,7 +303,7 @@ def _build_doc_number(prefix: str, year: int, sequence: int) -> str:
 async def import_entries(
     file: UploadFile = File(...),                     # CSV subido por el cliente.
     db: AsyncSession = Depends(get_async_db),         # Sesión asíncrona.
-    current_user: User = Depends(get_current_user),   # Usuario actual (para ownership/auditoría).
+    uid: str = Depends(current_user_id),   # Usuario actual (para ownership/auditoría).
 ):
     try:
         # 1) Leemos bytes del archivo y los decodificamos como UTF-8.
@@ -414,7 +414,7 @@ async def import_entries(
                     third_party_id=(row.get("third_party_id") or "").strip(),
                     concept_id=(row.get("concept_id") or "").strip(),
                     warehouse_id=(row.get("warehouse_id") or "").strip(),
-                    user_id=(row.get("user_id") or str(current_user.id)).strip(),
+                    user_id=(row.get("user_id") or str(uid)).strip(),
                     sequence_number=sequence,
                     entry_number=entry_number,
                     subtotal=Decimal(str(row.get("subtotal", "0"))),
@@ -516,7 +516,7 @@ async def import_entries(
                     product_id=prod_id,
                     warehouse_id=wh_id,
                     delta=Decimal("0"),  # Señal de "recalcular absoluto".
-                    user_id=current_user.id,
+                    user_id=uid,
                     reason="IMPORT_RECALC_ENTRIES_MINUS_OUTPUTS",  # Ayuda a auditoría/forense.
                 )
             except Exception as e:
@@ -540,7 +540,7 @@ async def import_entries(
                 action="IMPORT",
                 entity="Entry",
                 description=f"Importación OK: {imported} entradas. Stock recalculado en {len(pairs_to_recalc)} pares.",
-                user_id=current_user.id,
+                user_id=uid,
             )
 
         # 9) Confirmamos la transacción global (todas las filas correctas + auditoría + recalculo stock).

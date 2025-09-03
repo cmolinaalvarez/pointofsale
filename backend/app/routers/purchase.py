@@ -22,7 +22,7 @@
 # IMPORTS DEL ECOSISTEMA
 # ------------------------------
 from sqlalchemy import select, func          # select() para consultas, func.* para funciones SQL (MAX, COALESCE, DATE_PART, etc.)
-from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from fastapi import APIRouter, Depends, File, HTTPException, Query, Request, UploadFile, status
 #  - APIRouter: agrupa rutas bajo un prefijo y etiquetas.
 #  - Depends: inyección de dependencias (DB, usuario actual, etc.).
 #  - HTTPException: excepciones HTTP con status code controlado.
@@ -41,7 +41,6 @@ import logging                              # Logging estructurado para diagnós
 # IMPORTS DE LA APLICACIÓN
 # ------------------------------
 from app.core.security import get_async_db  # Proveedor de AsyncSession (inyección FastAPI).
-from app.dependencies.current_user import get_current_user  # Proveedor del usuario autenticado.
 from app.models.user import User            # Modelo de usuario (para tipos y acceso a su id).
 
 # Utilidades estándar
@@ -72,6 +71,7 @@ from app.schemas.purchase import (
 
 # CRUD de purchases (capa de acceso a datos con reglas específicas)
 from app.crud.purchase import (
+from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     create_purchase,
     get_purchases,
     get_purchase,
@@ -86,7 +86,7 @@ from app.utils.audit_level import get_audit_level
 # CONFIGURACIÓN DE RUTAS Y LOGGING
 # ------------------------------
 logger = logging.getLogger(__name__)            # Logger de módulo (hereda nivel/handlers globales).
-router = APIRouter(tags=["Purchases"])  # Todas las rutas cuelgan de /purchases
+router = APIRouter(tags=["Purchases"], dependencies=[Depends(get_current_user)])  # Todas las rutas cuelgan de /purchases
 
 # =============================================================================
 # CREATE - POST
@@ -95,7 +95,7 @@ router = APIRouter(tags=["Purchases"])  # Todas las rutas cuelgan de /purchases
 async def create_purchase_endpoint(
     purchase_in: PurchaseCreate,                         # Cuerpo del request (validado por pydantic).
     db: AsyncSession = Depends(get_async_db),      # Sesión de DB inyectada.
-    current_user: User = Depends(get_current_user) # Usuario autenticado (para auditoría y ownership).
+    uid: str = Depends(current_user_id) # Usuario autenticado (para auditoría y ownership).
 ):
     """
     Crea una compra (Purchase) usando la capa CRUD.
@@ -104,9 +104,9 @@ async def create_purchase_endpoint(
     try:
         # Delegamos la lógica de creación a la capa CRUD (incluye validaciones y commit).
         print("NEW_PURCHASE ::::::::::::::::::::::")
-        new_purchase = await create_purchase(db, purchase_in, current_user.id)
+        new_purchase = await create_purchase(db, purchase_in, uid)
         print("NEW_PURCHASE ::::::::::::::::::::::",new_purchase)
-        logger.info("Entrada creada: %s por usuario %s", new_purchase.id, current_user.id)
+        logger.info("Entrada creada: %s por usuario %s", new_purchase.id, uid)
         # Devolvemos el objeto serializado al esquema de respuesta.
         return PurchaseRead.model_validate(new_purchase)
 
@@ -147,7 +147,7 @@ async def list_purchases(
     skip: int = Query(0, ge=0),                   # Paginación: índice inicial (>=0).
     limit: int = Query(100, ge=1, le=1000),       # Paginación: cantidad (1..1000).
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Lista compras (sin 'total' agregado).
@@ -156,7 +156,7 @@ async def list_purchases(
     """
     try:
         # Obtenemos compras de la capa CRUD, potencialmente filtradas por user_id.
-        items = await get_purchases(db, skip=skip, limit=limit, user_id=current_user.id)
+        items = await get_purchases(db, skip=skip, limit=limit, user_id=uid)
 
         # Importante: si el CRUD hace flush para auditoría, aquí confirmamos con commit.
         await db.commit()
@@ -182,7 +182,7 @@ async def list_purchases(
 async def read_purchase(
     purchase_id: UUID,                                  # Path param validado por FastAPI (UUID correcto).
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Obtiene una compra por ID.
@@ -191,7 +191,7 @@ async def read_purchase(
     """
     try:
         # Recuperamos la compra; podría aplicar filtros de seguridad por user_id.
-        purchase = await get_purchase(db, purchase_id, user_id=current_user.id)
+        purchase = await get_purchase(db, purchase_id, user_id=uid)
 
         if not purchase:
             # No existe o no es accesible.
@@ -220,14 +220,14 @@ async def read_purchase(
 async def deactivate_purchase(
     purchase_id: UUID,
     db: AsyncSession = Depends(get_async_db),
-    current_user: User = Depends(get_current_user),
+    uid: str = Depends(current_user_id),
 ):
     """
     Desactiva una compra (soft-delete o marca 'active=False') y retorna el stock resultante.
     La lógica concreta reside en el CRUD `deactivate_purchase_and_return_stock`.
     """
     # La función retorna (purchase, stock_diff) — aquí solo devolvemos la purchase.
-    purchase, _ = await deactivate_purchase_and_return_stock(db, purchase_id, user_id=current_user.id)
+    purchase, _ = await deactivate_purchase_and_return_stock(db, purchase_id, user_id=uid)
 
     if purchase is None:
         raise HTTPException(status_code=404, detail="Entrada no encontrada")
@@ -304,7 +304,7 @@ def _build_doc_number(prefix: str, year: int, sequence: int) -> str:
 async def import_purchases(
     file: UploadFile = File(...),                     # CSV subido por el cliente.
     db: AsyncSession = Depends(get_async_db),         # Sesión asíncrona.
-    current_user: User = Depends(get_current_user),   # Usuario actual (para ownership/auditoría).
+    uid: str = Depends(current_user_id),   # Usuario actual (para ownership/auditoría).
 ):
     try:
         # 1) Leemos bytes del archivo y los decodificamos como UTF-8.
@@ -414,7 +414,7 @@ async def import_purchases(
                     document_id=doc_id,
                     third_party_id=(row.get("third_party_id") or "").strip(),
                     concept_id=(row.get("concept_id") or "").strip(),
-                    user_id=(row.get("user_id") or str(current_user.id)).strip(),
+                    user_id=(row.get("user_id") or str(uid)).strip(),
                     sequence_number=sequence,
                     purchase_number=purchase_number,
                     subtotal=Decimal(str(row.get("subtotal", "0"))),
@@ -509,7 +509,7 @@ async def import_purchases(
                 action="IMPORT",
                 entity="Purchase",
                 description=f"Importación OK: {imported} compras. Stock recalculado en {len(pairs_to_recalc)} pares.",
-                user_id=current_user.id,
+                user_id=uid,
             )
 
         # 9) Confirmamos la transacción global (todas las filas correctas + auditoría + recalculo stock).
