@@ -6,7 +6,7 @@ from app.schemas.user import UserRead
 from app.models.user import User
 from app.schemas.auth import Token, LoginRequest, RegisterRequest
 from app.core.security import verify_password, get_password_hash
-from app.dependencies.current_user import get_current_user
+from app.dependencies.auth import get_current_user
 from app.core.jwt import create_access_token, create_refresh_token, decode_token, ACCESS_TOKEN_EXPIRE_MINUTES
 from app.core.config import settings
 router = APIRouter(tags=["Authentication"])

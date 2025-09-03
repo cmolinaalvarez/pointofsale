@@ -70,8 +70,8 @@ from app.schemas.entry import (
 )
 
 # CRUD de entries (capa de acceso a datos con reglas específicas)
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
 from app.crud.entry import (
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     create_entry,
     get_entries,
     get_entry,

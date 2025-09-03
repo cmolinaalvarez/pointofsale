@@ -19,9 +19,10 @@ from app.core.security import get_async_db
 from app.models.user import User  # Usar el modelo User correcto
 from app.crud.role import role_crud
 from app.schemas.role import (
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     RoleCreate, RoleUpdate, RolePatch, RoleRead, RoleListResponse
 )
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
+   
 
 logger = logging.getLogger(__name__)
 

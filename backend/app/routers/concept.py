@@ -16,7 +16,7 @@ from app.utils.audit_level import get_audit_level
 
 from sqlalchemy.orm import selectinload
 from app.models.concept import Concept
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
 from sqlalchemy import select
 
 import logging

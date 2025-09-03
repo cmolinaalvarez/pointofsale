@@ -71,12 +71,13 @@ from app.schemas.purchase import (
 
 # CRUD de purchases (capa de acceso a datos con reglas específicas)
 from app.crud.purchase import (
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
     create_purchase,
     get_purchases,
     get_purchase,
     deactivate_purchase_and_return_stock
 )
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
+
 
 # 👇 Importes duplicados (log_action, get_audit_level); redundantes pero sin efecto adverso:
 from app.utils.audit import log_action

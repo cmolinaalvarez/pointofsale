@@ -15,7 +15,7 @@ from app.crud.user import create_user, get_users, get_user_by_id, update_user, p
 from app.models.user import User
 from app.core.security import get_async_db
 from app.utils.audit import log_action
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 logger = logging.getLogger(__name__)
 router = APIRouter(tags=["Users"], dependencies=[Depends(get_current_user)])

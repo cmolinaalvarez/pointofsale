@@ -19,7 +19,7 @@ from app.models.user import User
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
-from backend.app.dependencies.auth import get_current_user, require_scopes, current_user_id
+from app.dependencies.auth import get_current_user, require_scopes, current_user_id
 
 import logging
 logger = logging.getLogger(__name__)
