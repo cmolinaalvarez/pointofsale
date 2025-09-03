@@ -1,0 +1,194 @@
+import React, { useEffect, useState } from 'react';
+import { Account, AccountTypeEnum } from '@/app/types/account';
+import { ToggleLeft, ToggleRight } from 'lucide-react';
+
+interface EditAccountModalProps {
+  account: Account | null;
+  accountTypeEnum: AccountTypeEnum;
+  onClose: () => void;
+  onSave: (data: { 
+    id: string; 
+    name: string; 
+    description?: string; 
+    account_type: string;
+    active: boolean 
+  }) => Promise<void> | void;
+  saving?: boolean;
+}
+
+export const EditAccountModal: React.FC<EditAccountModalProps> = ({ 
+  account, 
+  accountTypeEnum,
+  onClose, 
+  onSave, 
+  saving = false 
+}) => {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [account_type, setAccountType] = useState('');
+  const [debit, setDebit] = useState(''); // ✅ Nuevo estado
+  const [debit_account_id, setDebitAccountId] = useState(''); // ✅ Nuevo estado
+  const [credit, setCredit] = useState(''); // ✅ Nuevo estado
+  const [credit_account_id, setCreditAccountId] = useState(''); // ✅ Nuevo estado
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [active, setActive] = useState<boolean>(true);
+
+  const accountTypeOptions = Object.entries(accountTypeEnum).map(([value, label]) => ({
+    value,
+    label
+  }));
+
+  useEffect(() => {
+    if (account) {    
+      console.log('Valor actual:', account.account_type);
+      console.log('Opciones:', accountTypeOptions);  
+      setCode(account.code || '');
+      setName(account.name || '');      
+      setDescription(account.description || '');
+
+      // Buscar el value correspondiente al label recibido
+      let initialAccountType = '';
+      if (account.account_type) {
+        // Buscar en las opciones el value cuyo label coincide con account.account_type
+        const found = accountTypeOptions.find(opt => opt.label === account.account_type);
+        initialAccountType = found ? found.value : account.account_type;
+      }
+      setAccountType(initialAccountType);
+      setActive(!!account.active);
+      setLocalError(null);
+    }
+  }, [account]);
+
+  if (!account) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) {
+      setLocalError('El código es obligatorio');
+      return;
+    }
+    if (!name.trim()) {
+      setLocalError('El nombre es obligatorio');
+      return;
+    }
+    if (!account_type.trim()) {
+      setLocalError('El tipo de accounto es obligatorio');
+      return;
+    }   
+    const payload = {
+      id: account.id,
+      code: code.trim(),
+      name: name.trim(),
+      description: description.trim() || undefined,
+      account_type: account_type.trim(),
+      active: Boolean(active)
+    };
+    
+    await onSave(payload);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white w-full max-w-lg rounded-lg shadow-xl border border-gray-200">
+        <div className="flex items-center justify-between px-5 py-3 border-b">
+          <h2 className="text-lg font-semibold">Editar cuenta</h2>
+          <button onClick={onClose} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {localError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-2 rounded">{localError}</div>}
+          
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Código</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              disabled={saving}
+              maxLength={50}
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Nombre</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={saving}
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Descripción</label>
+            <textarea
+              className="w-full border rounded px-3 py-2 text-sm resize-y min-h-[80px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+          
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Tipo de cuenta</label>
+            <select
+              className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={account_type}
+              onChange={(e) => setAccountType(e.target.value)}
+              required
+              disabled={saving}
+            >
+              <option value="">Seleccionar tipo</option>
+              {accountTypeOptions.map((option) => (
+                <option key={option.value} value={option.value}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </div>          
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActive(a => !a)}
+                disabled={saving}
+                className="flex items-center gap-2 px-3 py-2 rounded bg-white transition-colors focus:outline-none disabled:opacity-50"
+                aria-pressed={active}
+                aria-label={active ? 'Desactivar cuenta' : 'Activar cuenta'}
+                title={active ? 'Desactivar cuenta' : 'Activar cuenta'}
+              >
+                {active ? <ToggleRight className="h-6 w-6 text-green-600" /> : <ToggleLeft className="h-6 w-6 text-gray-400" />}
+                <span
+                  className={`inline-block text-[13px] font-semibold px-3 py-1 rounded-full border text-center align-middle transition-colors duration-200 min-w-[70px] ${active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-300'}`}
+                >
+                  {active ? 'Activa' : 'Inactiva'}
+                </span>
+              </button>
+            </div>
+          </div>
+          
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};

@@ -1,0 +1,414 @@
+@startuml OAuth2_Detailed_Flow_With_Different_Clients
+!theme plain
+title Flujo Detallado OAuth2 - Diferentes Clientes y Validación de Permisos
+
+== Configuración Inicial ==
+
+database "PostgreSQL Database" as DB {
+  rectangle "users table" as UsersTable {
+    note as UserExample
+    **Ejemplo de usuarios:**
+    id: 123e4567-e89b-12d3-a456-426614174000
+    email: admin@empresa.com
+    role: ADMIN
+    superuser: true
+    ---
+    id: 789e4567-e89b-12d3-a456-426614174001  
+    email: cajero@empresa.com
+    role: CASHIER
+    superuser: false
+    ---
+    id: 456e4567-e89b-12d3-a456-426614174002
+    email: gerente@empresa.com
+    role: MANAGER
+    superuser: false
+    end note
+  }
+  
+  rectangle "oauth2_clients table" as ClientsTable {
+    note as ClientExample
+    **Clientes OAuth2:**
+    client_id: frontend_web_v1_abc123
+    allowed_scopes: [read, write, read:products, write:products, admin]
+    description: "App web administrativa"
+    ---
+    client_id: mobile_pos_v1_def456
+    allowed_scopes: [read, read:products, pos:sales, write:sales]
+    description: "App móvil POS"
+    ---
+    client_id: reports_api_v1_ghi789
+    allowed_scopes: [read, read:reports, advanced:reports]
+    description: "API externa reportes"
+    end note
+  }
+}
+
+== Flujo 1: Cliente Web Admin ==
+
+actor "Administrador" as AdminUser
+participant "Frontend Web App" as WebApp
+participant "OAuth2 Server\n(/auth/token)" as AuthServer
+participant "OAuth2Middleware" as Middleware
+participant "Products API\n(/products/)" as ProductsAPI
+participant "Database" as DB1
+
+AdminUser -> WebApp: 1. Login en interfaz web
+note right: Formulario con:\n- Email: admin@empresa.com\n- Password: admin123
+
+WebApp -> AuthServer: 2. POST /auth/token
+note right
+**Request Body:**
+grant_type=password
+username=admin@empresa.com
+password=admin123
+client_id=frontend_web_v1_abc123
+client_secret=web_secret_hash
+scope=read write read:products write:products admin
+end note
+
+AuthServer -> DB1: 3. Validar cliente OAuth2
+note right: SELECT * FROM oauth2_clients WHERE client_id='frontend_web_v1_abc123'
+DB1 -> AuthServer: Cliente válido + allowed_scopes
+
+AuthServer -> DB1: 4. Buscar usuario por email
+note right: SELECT * FROM users WHERE email='admin@empresa.com'
+DB1 -> AuthServer: User encontrado
+
+note over AuthServer
+**Usuario obtenido:**
+- id: 123e4567-e89b-12d3-a456-426614174000
+- email: admin@empresa.com
+- role: ADMIN
+- superuser: true
+end note
+
+AuthServer -> AuthServer: 5. Validar password
+note right: await verify_password(password, user.password)
+
+AuthServer -> AuthServer: 6. Calcular scopes según perfil
+note right
+**Proceso:**
+1. Scopes solicitados: [read, write, read:products, write:products, admin]
+2. Scopes del cliente: [read, write, read:products, write:products, admin]
+3. Scopes del rol ADMIN: [todos los scopes disponibles]
+4. Scopes finales: [read, write, read:products, write:products, admin]
+end note
+
+AuthServer -> AuthServer: 7. Crear token JWT
+note right
+**Token payload:**
+{
+  "sub": "123e4567-e89b-12d3-a456-426614174000",
+  "scopes": ["read", "write", "read:products", "write:products", "admin"],
+  "exp": 1640995200
+}
+end note
+
+AuthServer -> WebApp: 8. Respuesta con token
+note right
+**Response:**
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer",
+  "expires_in": 3600
+}
+end note
+
+WebApp -> WebApp: 9. Almacenar token
+note right: localStorage.setItem('token', access_token)
+
+AdminUser -> WebApp: 10. Crear nuevo producto
+WebApp -> ProductsAPI: 11. POST /products/
+note right
+**Headers:**
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+Content-Type: application/json
+
+**Body:**
+{
+  "name": "Producto Admin",
+  "price": 150.00,
+  "category_id": "cat_123"
+}
+end note
+
+ProductsAPI -> Middleware: 12. Intercepción del request
+note right: OAuth2Middleware.__call__()
+
+Middleware -> Middleware: 13. Extraer token del header
+note right
+authorization = request.headers.get("Authorization")
+token = authorization.replace("Bearer ", "")
+end note
+
+Middleware -> Middleware: 14. Decodificar token JWT
+note right
+**Token decodificado:**
+{
+  "sub": "123e4567-e89b-12d3-a456-426614174000",
+  "scopes": ["read", "write", "read:products", "write:products", "admin"],
+  "exp": 1640995200
+}
+end note
+
+Middleware -> Middleware: 15. Guardar en request.state
+note right
+request.state.user_id = "123e4567-e89b-12d3-a456-426614174000"
+request.state.token_payload = decoded_payload
+end note
+
+Middleware -> ProductsAPI: 16. Continuar al endpoint
+
+ProductsAPI -> ProductsAPI: 17. Ejecutar @require_scope("write:products")
+note right
+**Validación del decorador:**
+1. token_scopes = ["read", "write", "read:products", "write:products", "admin"]
+2. required_scope = "write:products"
+3. ScopeValidator.has_scope(token_scopes, "write:products")
+4. "write:products" in token_scopes → TRUE ✅
+end note
+
+ProductsAPI -> DB1: 18. Crear producto en BD
+DB1 -> ProductsAPI: Producto creado exitosamente
+ProductsAPI -> WebApp: 19. HTTP 201 Created
+WebApp -> AdminUser: ✅ Producto creado exitosamente
+
+== Flujo 2: Cliente Mobile (Cajero) ==
+
+actor "Cajero" as CashierUser
+participant "Mobile POS App" as MobileApp
+participant "OAuth2 Server" as AuthServer2
+participant "OAuth2Middleware" as Middleware2
+participant "Products API" as ProductsAPI2
+participant "Database" as DB2
+
+CashierUser -> MobileApp: 1. Login en app móvil
+note right: Credenciales:\n- Email: cajero@empresa.com\n- Password: cajero123
+
+MobileApp -> AuthServer2: 2. POST /auth/token
+note right
+**Request Body:**
+grant_type=password
+username=cajero@empresa.com
+password=cajero123
+client_id=mobile_pos_v1_def456
+client_secret=mobile_secret_hash
+scope=read read:products write:products pos:sales
+end note
+
+AuthServer2 -> DB2: 3. Validar cliente móvil
+note right: Client: mobile_pos_v1_def456
+DB2 -> AuthServer2: Cliente válido
+
+AuthServer2 -> DB2: 4. Buscar usuario cajero
+note right: SELECT * FROM users WHERE email='cajero@empresa.com'
+DB2 -> AuthServer2: Usuario encontrado
+
+note over AuthServer2
+**Usuario cajero:**
+- id: 789e4567-e89b-12d3-a456-426614174001
+- email: cajero@empresa.com
+- role: CASHIER
+- superuser: false
+end note
+
+AuthServer2 -> AuthServer2: 5. Calcular scopes para CASHIER
+note right
+**Proceso de filtrado:**
+1. Scopes solicitados: [read, read:products, write:products, pos:sales]
+2. Scopes del cliente móvil: [read, read:products, pos:sales, write:sales]
+3. Scopes del rol CASHIER: [read, read:products, read:sales, pos:sales]
+4. Intersección: [read, read:products, pos:sales]
+5. ❌ "write:products" NO permitido para CASHIER
+end note
+
+AuthServer2 -> AuthServer2: 6. Crear token limitado
+note right
+**Token payload para CASHIER:**
+{
+  "sub": "789e4567-e89b-12d3-a456-426614174001",
+  "scopes": ["read", "read:products", "pos:sales"],
+  "exp": 1640995200
+}
+end note
+
+AuthServer2 -> MobileApp: 7. Token con scopes limitados
+MobileApp -> MobileApp: 8. Almacenar token
+
+CashierUser -> MobileApp: 9. Intentar crear producto
+MobileApp -> ProductsAPI2: 10. POST /products/
+note right
+**Headers:**
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+
+**Body:**
+{
+  "name": "Producto desde móvil",
+  "price": 75.00
+}
+end note
+
+ProductsAPI2 -> Middleware2: 11. Intercepción
+Middleware2 -> Middleware2: 12. Decodificar token cajero
+note right
+**Token decodificado:**
+{
+  "sub": "789e4567-e89b-12d3-a456-426614174001",
+  "scopes": ["read", "read:products", "pos:sales"],
+  "exp": 1640995200
+}
+end note
+
+Middleware2 -> ProductsAPI2: 13. Continuar al endpoint
+
+ProductsAPI2 -> ProductsAPI2: 14. Ejecutar @require_scope("write:products")
+note right
+**Validación FALLIDA:**
+1. token_scopes = ["read", "read:products", "pos:sales"]
+2. required_scope = "write:products"
+3. ScopeValidator.has_scope(token_scopes, "write:products")
+4. "write:products" NOT in token_scopes → FALSE ❌
+5. "admin" NOT in token_scopes → FALSE ❌
+end note
+
+ProductsAPI2 -> MobileApp: 15. HTTP 403 Forbidden
+note right
+**Error Response:**
+{
+  "detail": "Acceso denegado. Scope requerido: write:products. 
+            Scopes disponibles: read, read:products, pos:sales"
+}
+end note
+
+MobileApp -> CashierUser: ❌ No tienes permisos para crear productos
+
+== Flujo 3: Operación Permitida para Cajero ==
+
+CashierUser -> MobileApp: 1. Consultar productos (operación permitida)
+MobileApp -> ProductsAPI2: 2. GET /products/
+note right
+**Headers:**
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+end note
+
+ProductsAPI2 -> Middleware2: 3. Intercepción
+Middleware2 -> ProductsAPI2: 4. Token ya validado
+
+ProductsAPI2 -> ProductsAPI2: 5. Ejecutar @require_scope("read:products")
+note right
+**Validación EXITOSA:**
+1. token_scopes = ["read", "read:products", "pos:sales"]
+2. required_scope = "read:products"
+3. "read:products" in token_scopes → TRUE ✅
+end note
+
+ProductsAPI2 -> DB2: 6. SELECT productos
+DB2 -> ProductsAPI2: Lista de productos
+ProductsAPI2 -> MobileApp: 7. HTTP 200 OK + productos
+MobileApp -> CashierUser: ✅ Lista de productos mostrada
+
+== Flujo 4: API Externa de Reportes ==
+
+participant "External System" as ExternalAPI
+participant "Reports Service" as ReportsService
+participant "OAuth2 Server" as AuthServer3
+participant "Reports API\n(/reports/)" as ReportsAPI
+participant "Database" as DB3
+
+ExternalAPI -> AuthServer3: 1. Autenticación de servicio
+note right
+**Service-to-Service Auth:**
+grant_type=client_credentials
+client_id=reports_api_v1_ghi789
+client_secret=reports_secret_hash
+scope=read:reports advanced:reports
+end note
+
+AuthServer3 -> DB3: 2. Validar cliente de reportes
+DB3 -> AuthServer3: Cliente válido
+
+AuthServer3 -> AuthServer3: 3. Crear token de servicio
+note right
+**Token de servicio:**
+{
+  "sub": "service_account",
+  "scopes": ["read:reports", "advanced:reports"],
+  "exp": 1640995200
+}
+end note
+
+AuthServer3 -> ExternalAPI: 4. Token especializado
+
+ExternalAPI -> ReportsAPI: 5. GET /reports/sales
+note right
+**Headers:**
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+end note
+
+ReportsAPI -> ReportsAPI: 6. Ejecutar @require_scope("read:reports")
+note right
+**Validación EXITOSA:**
+1. token_scopes = ["read:reports", "advanced:reports"]
+2. required_scope = "read:reports"
+3. "read:reports" in token_scopes → TRUE ✅
+end note
+
+ReportsAPI -> DB3: 7. Generar reporte
+DB3 -> ReportsAPI: Datos del reporte
+ReportsAPI -> ExternalAPI: 8. HTTP 200 + reporte
+
+== Matriz de Validaciones ==
+
+note as ValidationMatrix
+**Matriz de Validaciones por Cliente:**
+
+| Endpoint | Scope Requerido | Admin Web | Mobile POS | Reports API |
+|----------|----------------|-----------|------------|-------------|
+| POST /products/ | write:products | ✅ | ❌ | ❌ |
+| GET /products/ | read:products | ✅ | ✅ | ❌ |
+| POST /sales/ | write:sales | ✅ | ✅ | ❌ |
+| GET /sales/ | read:sales | ✅ | ✅ | ❌ |
+| POST /sales/pos | pos:sales | ✅ | ✅ | ❌ |
+| GET /reports/ | read:reports | ❌ | ❌ | ✅ |
+| GET /reports/advanced | advanced:reports | ❌ | ❌ | ✅ |
+| POST /users/ | admin | ✅ | ❌ | ❌ |
+
+**Proceso de Validación en cada Request:**
+1. Middleware extrae token → Decodifica scopes
+2. Decorador @require_scope() → Compara scopes
+3. ScopeValidator.has_scope() → TRUE/FALSE
+4. Si TRUE → Ejecuta función
+5. Si FALSE → HTTP 403 Forbidden
+end note
+
+== Flujo de Datos Simplificado ==
+
+rectangle "1. LOGIN" as Login {
+  note as LoginFlow
+  **Input:** credentials + client_id + scope
+  **Process:** DB lookup + role analysis + scope calculation
+  **Output:** JWT token with scopes
+  end note
+}
+
+rectangle "2. REQUEST" as Request {
+  note as RequestFlow
+  **Input:** HTTP request + Authorization header
+  **Process:** Token extraction + JWT decode
+  **Output:** request.state with user info + scopes
+  end note
+}
+
+rectangle "3. VALIDATION" as Validation {
+  note as ValidationFlow
+  **Input:** required_scope from @require_scope()
+  **Process:** Compare token_scopes vs required_scope
+  **Output:** Allow (200) or Deny (403)
+  end note
+}
+
+Login -> Request: JWT Token
+Request -> Validation: Decoded Scopes
+Validation -> Login: Success/Error
+
+@enduml

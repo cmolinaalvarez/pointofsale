@@ -1,0 +1,13 @@
+﻿key,value,type,description
+consecutive_by_year,True,bool,Define si los consecutivos de documentos se reinician cada año.
+invoice_prefix,FACV,string,Prefijo para el consecutivo de las facturas de venta.
+currency,COP,string,Moneda por defecto del sistema.
+max_users,100,int,Cantidad máxima de usuarios permitidos.
+company_name,Mi Empresa S.A.S,string,Nombre legal de la empresa.
+tax_percentage,19,int,Porcentaje general de impuesto aplicado a las ventas.
+backup_enabled,True,bool,Indica si las copias de seguridad automáticas están habilitadas.
+theme,light,string,Tema visual predeterminado del sistema (claro u oscuro).
+support_email,soporte@miempresa.com,string,Correo de contacto para soporte técnico.
+timeout_minutes,30,int,Tiempo de expiración de sesión de usuario en minutos.
+subcategories_use,True,bool,Uso de subcategorías
+audit_level,3,int,Nivel de auditoria

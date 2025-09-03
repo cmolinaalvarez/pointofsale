@@ -1,0 +1,377 @@
+@startuml OAuth2_Different_Clients_Capabilities
+!theme plain
+title Capacidades y Limitaciones por Tipo de Cliente OAuth2
+
+== Arquitectura de Clientes ==
+
+cloud "OAuth2 Authorization Server" as AuthServer {
+  rectangle "Token Generation Logic" as TokenLogic {
+    note as TokenProcess
+    **Proceso de Generación de Token:**
+    1. Validar cliente (client_id + secret)
+    2. Validar usuario (email + password)
+    3. Obtener rol del usuario desde BD
+    4. Calcular scopes según rol
+    5. Filtrar por scopes permitidos del cliente
+    6. Generar JWT con scopes finales
+    end note
+  }
+}
+
+== Cliente 1: Frontend Web Administrativo ==
+
+rectangle "Frontend Web App" as WebClient {
+  agent "Administrador" as AdminUser
+  agent "Gerente" as ManagerUser
+  
+  rectangle "Configuración Cliente" as WebConfig {
+    note as WebClientConfig
+    **client_id:** frontend_web_v1_abc123
+    **allowed_scopes:**
+    - read, write, delete
+    - read:products, write:products, delete:products
+    - read:users, write:users, admin
+    - read:purchases, write:purchases
+    - read:sales, write:sales
+    - read:reports, advanced:reports
+    
+    **Usuarios objetivo:** Admin, Manager
+    **Capacidades:** CRUD completo del sistema
+    end note
+  }
+}
+
+== Cliente 2: Mobile POS App ==
+
+rectangle "Mobile POS Application" as MobileClient {
+  agent "Cajero" as CashierUser
+  agent "Vendedor" as SellerUser
+  
+  rectangle "Configuración Cliente" as MobileConfig {
+    note as MobileClientConfig
+    **client_id:** mobile_pos_v1_def456
+    **allowed_scopes:**
+    - read
+    - read:products
+    - read:sales, write:sales, pos:sales
+    - read:inventory
+    
+    **Usuarios objetivo:** Cashier, Employee
+    **Capacidades:** Solo POS y consultas
+    end note
+  }
+}
+
+== Cliente 3: API Externa ==
+
+rectangle "External Reports API" as ExternalClient {
+  agent "Sistema BI" as BISystem
+  agent "Webhook Service" as WebhookService
+  
+  rectangle "Configuración Cliente" as ExternalConfig {
+    note as ExternalClientConfig
+    **client_id:** reports_api_v1_ghi789
+    **allowed_scopes:**
+    - read
+    - read:reports, advanced:reports, export:reports
+    - read:products (solo para reportes)
+    - read:sales (solo para reportes)
+    
+    **Usuarios objetivo:** Service accounts
+    **Capacidades:** Solo reportes y análisis
+    end note
+  }
+}
+
+== Flujo de Autenticación por Cliente ==
+
+WebClient -> AuthServer: Login Admin
+note right
+POST /auth/token
+client_id=frontend_web_v1_abc123
+username=admin@empresa.com
+scope=read write admin read:products write:products
+end note
+
+AuthServer -> WebClient: Token con scopes amplios
+note right
+JWT payload:
+{
+  "sub": "admin_id",
+  "scopes": ["read", "write", "admin", "read:products", "write:products"],
+  "exp": 1640995200
+}
+end note
+
+MobileClient -> AuthServer: Login Cajero
+note right
+POST /auth/token
+client_id=mobile_pos_v1_def456
+username=cajero@empresa.com
+scope=read read:products pos:sales
+end note
+
+AuthServer -> MobileClient: Token limitado
+note right
+JWT payload:
+{
+  "sub": "cajero_id",
+  "scopes": ["read", "read:products", "pos:sales"],
+  "exp": 1640995200
+}
+end note
+
+ExternalClient -> AuthServer: Service Auth
+note right
+POST /auth/token
+grant_type=client_credentials
+client_id=reports_api_v1_ghi789
+scope=read:reports advanced:reports
+end note
+
+AuthServer -> ExternalClient: Token especializado
+note right
+JWT payload:
+{
+  "sub": "service_account",
+  "scopes": ["read:reports", "advanced:reports"],
+  "exp": 1640995200
+}
+end note
+
+== Matriz de Operaciones por Cliente ==
+
+package "Sistema de Endpoints" as EndpointSystem {
+
+  rectangle "Products Module" as ProductsModule {
+    usecase "GET /products/" as GetProducts
+    usecase "POST /products/" as CreateProduct
+    usecase "PUT /products/{id}" as UpdateProduct
+    usecase "DELETE /products/{id}" as DeleteProduct
+    
+    note as ProductsRequirements
+    **Scopes requeridos:**
+    - GET: read:products
+    - POST: write:products
+    - PUT: write:products  
+    - DELETE: delete:products
+    end note
+  }
+  
+  rectangle "Sales Module" as SalesModule {
+    usecase "GET /sales/" as GetSales
+    usecase "POST /sales/" as CreateSale
+    usecase "POST /sales/pos" as ProcessPOSSale
+    usecase "DELETE /sales/{id}" as CancelSale
+    
+    note as SalesRequirements
+    **Scopes requeridos:**
+    - GET: read:sales
+    - POST: write:sales
+    - POST POS: pos:sales
+    - DELETE: delete:sales
+    end note
+  }
+  
+  rectangle "Users Module" as UsersModule {
+    usecase "GET /users/" as GetUsers
+    usecase "POST /users/" as CreateUser
+    usecase "PUT /users/{id}" as UpdateUser
+    
+    note as UsersRequirements
+    **Scopes requeridos:**
+    - GET: read:users
+    - POST: admin
+    - PUT: write:users
+    end note
+  }
+  
+  rectangle "Reports Module" as ReportsModule {
+    usecase "GET /reports/basic" as BasicReports
+    usecase "GET /reports/advanced" as AdvancedReports
+    usecase "POST /reports/export" as ExportReports
+    
+    note as ReportsRequirements
+    **Scopes requeridos:**
+    - Basic: read:reports
+    - Advanced: advanced:reports
+    - Export: export:reports
+    end note
+  }
+}
+
+== Capacidades por Cliente ==
+
+WebClient --|> GetProducts : ✅ read:products
+WebClient --|> CreateProduct : ✅ write:products
+WebClient --|> UpdateProduct : ✅ write:products
+WebClient --|> DeleteProduct : ✅ delete:products
+WebClient --|> GetSales : ✅ read:sales
+WebClient --|> CreateSale : ✅ write:sales
+WebClient --|> ProcessPOSSale : ✅ pos:sales
+WebClient --|> CancelSale : ✅ delete:sales
+WebClient --|> GetUsers : ✅ read:users
+WebClient --|> CreateUser : ✅ admin
+WebClient --|> UpdateUser : ✅ write:users
+WebClient --|> BasicReports : ❌ No tiene read:reports
+
+MobileClient --|> GetProducts : ✅ read:products
+MobileClient --|> CreateProduct : ❌ No tiene write:products
+MobileClient --|> UpdateProduct : ❌ No tiene write:products
+MobileClient --|> DeleteProduct : ❌ No tiene delete:products
+MobileClient --|> GetSales : ✅ read:sales
+MobileClient --|> CreateSale : ✅ write:sales
+MobileClient --|> ProcessPOSSale : ✅ pos:sales
+MobileClient --|> CancelSale : ❌ No tiene delete:sales
+MobileClient --|> GetUsers : ❌ No tiene read:users
+MobileClient --|> CreateUser : ❌ No tiene admin
+MobileClient --|> UpdateUser : ❌ No tiene write:users
+MobileClient --|> BasicReports : ❌ No tiene read:reports
+
+ExternalClient --|> GetProducts : ❌ No tiene read:products
+ExternalClient --|> CreateProduct : ❌ No tiene write:products
+ExternalClient --|> UpdateProduct : ❌ No tiene write:products
+ExternalClient --|> DeleteProduct : ❌ No tiene delete:products
+ExternalClient --|> GetSales : ❌ No tiene read:sales
+ExternalClient --|> CreateSale : ❌ No tiene write:sales
+ExternalClient --|> ProcessPOSSale : ❌ No tiene pos:sales
+ExternalClient --|> CancelSale : ❌ No tiene delete:sales
+ExternalClient --|> GetUsers : ❌ No tiene read:users
+ExternalClient --|> CreateUser : ❌ No tiene admin
+ExternalClient --|> UpdateUser : ❌ No tiene write:users
+ExternalClient --|> BasicReports : ✅ read:reports
+ExternalClient --|> AdvancedReports : ✅ advanced:reports
+ExternalClient --|> ExportReports : ✅ export:reports
+
+== Ejemplos de Requests y Respuestas ==
+
+group Frontend Web - Operación Exitosa
+  WebClient -> ProductsModule: POST /products/\nAuthorization: Bearer <admin_token>
+  note right
+  **Request:**
+  {
+    "name": "Nuevo Producto",
+    "price": 100.00,
+    "category_id": "cat_123"
+  }
+  
+  **Token scopes:** ["read", "write", "read:products", "write:products"]
+  **Required scope:** write:products
+  **Validation:** ✅ PASS
+  end note
+  
+  ProductsModule -> WebClient: HTTP 201 Created
+  note left
+  **Response:**
+  {
+    "id": "prod_456",
+    "name": "Nuevo Producto",
+    "price": 100.00,
+    "created_at": "2024-01-01T10:00:00Z"
+  }
+  end note
+end
+
+group Mobile App - Operación Denegada
+  MobileClient -> ProductsModule: POST /products/\nAuthorization: Bearer <cashier_token>
+  note right
+  **Request:**
+  {
+    "name": "Producto desde móvil",
+    "price": 75.00
+  }
+  
+  **Token scopes:** ["read", "read:products", "pos:sales"]
+  **Required scope:** write:products
+  **Validation:** ❌ FAIL
+  end note
+  
+  ProductsModule -> MobileClient: HTTP 403 Forbidden
+  note left
+  **Response:**
+  {
+    "detail": "Acceso denegado. Scope requerido: write:products. 
+              Scopes disponibles: read, read:products, pos:sales"
+  }
+  end note
+end
+
+group External API - Operación Especializada
+  ExternalClient -> ReportsModule: GET /reports/advanced\nAuthorization: Bearer <service_token>
+  note right
+  **Request:** GET /reports/advanced?period=monthly
+  
+  **Token scopes:** ["read:reports", "advanced:reports"]
+  **Required scope:** advanced:reports
+  **Validation:** ✅ PASS
+  end note
+  
+  ReportsModule -> ExternalClient: HTTP 200 OK
+  note left
+  **Response:**
+  {
+    "report_id": "rpt_789",
+    "type": "advanced_sales",
+    "data": {...},
+    "generated_at": "2024-01-01T10:00:00Z"
+  }
+  end note
+end
+
+== Configuración Recomendada ==
+
+note as ClientRecommendations
+**Recomendaciones de Configuración:**
+
+**🖥️ Frontend Web (Administradores):**
+```json
+{
+  "client_id": "frontend_web_v1",
+  "allowed_scopes": [
+    "read", "write", "delete",
+    "read:products", "write:products", "delete:products",
+    "read:users", "write:users", "admin",
+    "read:sales", "write:sales", "delete:sales",
+    "read:purchases", "write:purchases"
+  ],
+  "grant_types": ["password"],
+  "description": "Aplicación web administrativa completa"
+}
+```
+
+**📱 Mobile POS (Cajeros/Vendedores):**
+```json
+{
+  "client_id": "mobile_pos_v1",
+  "allowed_scopes": [
+    "read",
+    "read:products",
+    "read:sales", "write:sales", "pos:sales",
+    "read:inventory"
+  ],
+  "grant_types": ["password"],
+  "description": "App móvil punto de venta"
+}
+```
+
+**🔌 API Externa (Servicios):**
+```json
+{
+  "client_id": "external_api_v1",
+  "allowed_scopes": [
+    "read",
+    "read:reports", "advanced:reports", "export:reports"
+  ],
+  "grant_types": ["client_credentials"],
+  "description": "API externa para reportes y análisis"
+}
+```
+
+**Principios de Seguridad:**
+1. **Menor privilegio:** Cada cliente solo tiene scopes mínimos necesarios
+2. **Segregación:** Diferentes clientes para diferentes propósitos
+3. **Auditoría:** Todos los accesos son rastreables por cliente
+4. **Rotación:** Secrets de cliente deben rotarse periódicamente
+end note
+
+@enduml

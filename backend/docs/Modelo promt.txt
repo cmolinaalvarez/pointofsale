@@ -1,0 +1,2305 @@
+Quiero implementar todo el endpoint crud para PaymentTerms basándome en el endpoint Brand, donde el endpoint Brand contiene los siguientes elementos en el Backend y el Frontend
+
+##########################################################################
+###########################  Backend FastApi  ############################
+##########################################################################
+
+1. Modelo Brand ubicado en backend/app/models donde backend es el proyecto
+
+# ============================================================
+# IMPORTACIONES NECESARIAS
+# ============================================================
+# Tipos de columna: String, Boolean para texto y verdadero/falso
+# DateTime para fechas y ForeignKey para claves foráneas
+from sqlalchemy import String, Boolean, DateTime, ForeignKey
+from sqlalchemy.sql import func  # Para usar funciones como "func.now()"
+
+# Tipado ORM moderno con Mapped y mapped_column
+from sqlalchemy.orm import Mapped, mapped_column
+
+# Modelo base común para heredar
+from app.db.base import Base
+
+# Importamos el tipo GUID_ID, que representa un identificador único (UUID)
+# Esto se usa en lugar de un entero para el campo `id`
+import uuid
+from sqlalchemy.dialects.postgresql import UUID
+
+# ============================================================
+# MODELO DE LA TABLA 'brands' (marcas)
+# ============================================================
+class Brand(Base):
+    __tablename__ = "brands"  # Nombre real de la tabla
+
+    # ID de la marca (clave primaria)
+    # - GUID_ID es un UUID (identificador único universal)
+    # - mapped_column() define que esta columna es clave primaria
+    id: Mapped[uuid.UUID] = mapped_column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
+    # Nombre de la marca (único, obligatorio, máximo 255 caracteres)
+    name: Mapped[str] = mapped_column(String(255), nullable=False, unique=True)
+
+    # Descripción de la marca (opcional, hasta 500 caracteres)
+    # Este campo permite agregar detalles adicionales sobre la marca
+    description: Mapped[str] = mapped_column(String(500), nullable=True)
+
+    # Estado de la marca (activa o no)
+    active: Mapped[bool] = mapped_column(Boolean, default=True)
+
+    # ID del usuario que creó la marca
+    # - Clave foránea que apunta a la tabla "users"
+    # - UUID porque asumimos que `users.id` es UUID
+    user_id: Mapped[UUID] = mapped_column(ForeignKey("users.id"), nullable=False)
+
+    # Fecha y hora de creación (se asigna automáticamente con func.now())
+    created_at: Mapped[DateTime] = mapped_column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+
+
+    # Definimos el campo `updated_at` usando `Mapped[DateTime]`, lo que indica que este atributo
+    # es parte del modelo ORM y será mapeado a una columna en la base de datos con tipo `DateTime`.
+    updated_at: Mapped[DateTime] = mapped_column(
+
+    # Especificamos que la columna será de tipo `DateTime` y que manejará información de zona horaria (timezone=True),
+    # lo cual es útil cuando trabajamos en aplicaciones distribuidas o con múltiples zonas horarias.
+    DateTime(timezone=True),
+
+    # `default=func.now()` indica que, cuando se cree un nuevo registro, el valor de esta columna se establecerá
+    # automáticamente con la fecha y hora actual del servidor (func.now() es una función de SQL que equivale a "CURRENT_TIMESTAMP").
+    server_default=func.now(),
+
+    # `onupdate=func.now()` asegura que cada vez que el registro sea actualizado mediante un `UPDATE`,
+    # esta columna se actualice automáticamente con la nueva fecha y hora del momento del cambio.
+    # Es ideal para registrar la "última modificación".
+    onupdate=func.now(),
+
+    # Permitimos que el campo pueda quedar vacío si por alguna razón no se asigna (aunque generalmente no debería pasar).
+    # Esto se hace por compatibilidad en algunas operaciones que no requieren actualización automática.
+    nullable=True
+    )
+	
+2. Schema Brand ubicado en backend/app/schemas donde backend es es proyecto
+
+from pydantic import BaseModel
+from uuid import UUID
+from typing import Optional, List
+from datetime import datetime
+
+# BASE
+class BrandBase(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None
+    active: bool = True
+
+# CREATE (POST)
+class BrandCreate(BrandBase):
+    pass
+# UPDATE (PUT)
+class BrandUpdate(BrandBase):
+    pass  # Igual, si son los mismos campos que BrandBase
+
+# PATCH (parcial)
+class BrandPatch(BaseModel):
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = None
+
+# LECTURA (GET)
+class BrandRead(BrandBase):
+    id: UUID
+    code: Optional[str] = None
+    name: Optional[str] = None
+    description: Optional[str] = None
+    active: Optional[bool] = None
+    user_id: UUID
+    created_at: datetime
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+# -- Este es el schema que te faltaba --
+class BrandListResponse(BaseModel):
+    total: int
+    items: List[BrandRead]
+
+    class Config:
+        from_attributes = True
+        
+
+
+class BrandImportResult(BaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list
+	
+3. CRUD Brand ubicado en backend/app/crud donde backend es es proyecto
+
+from sqlalchemy.future import select
+from uuid import UUID
+from app.models.brand import Brand
+from app.schemas.brand import BrandCreate, BrandUpdate, BrandPatch
+from sqlalchemy.ext.asyncio import AsyncSession
+from app.models.audit_log import AuditLog
+from datetime import datetime
+from fastapi import HTTPException
+from app.utils.audit import log_action
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from datetime import datetime
+import logging
+from sqlalchemy.future import select
+from sqlalchemy import func
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
+from fastapi import APIRouter,HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
+from typing import Optional
+import logging
+from sqlalchemy.exc import SQLAlchemyError
+from app.utils.audit_level import get_audit_level
+
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/brands", tags=["Brands"])
+
+async def create_brand(db: AsyncSession, brand_in: BrandCreate, user_id: UUID):
+    try:
+        brand = Brand(**brand_in.model_dump(), user_id=user_id)
+        db.add(brand)
+        await db.flush()
+    except Exception as e:
+        logger.exception("Error al crear la marca")  # Solo errores
+        raise
+    log = None
+    try:
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level > 1:
+            description = (
+                f"Marca creada: {brand.name} "
+                f"(id={brand.id}, description={brand.description}, active={brand.active})"
+            )
+            log = await log_action(
+                db,
+                action="CREATE",
+                entity="Brand",
+                entity_id=brand.id,
+                description=description,
+                user_id=brand.user_id
+            )
+    except Exception as e:
+        logger.exception("Error al crear el log de auditoría")  # Solo errores
+        raise
+    print(log)
+    return brand, log
+
+# GET ALL
+
+async def get_brands(
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    active: Optional[bool] = None,
+    user_id: Optional[UUID] = None,  # Para auditoría
+) -> dict:
+    """
+    Retorna una lista paginada de marcas, con soporte para búsqueda por nombre y filtro por estado activo.
+    Registra la auditoría si es necesario.
+    """
+    try:
+        query = select(Brand)
+
+        if search:
+            query = query.where(Brand.name.ilike(f"%{search}%"))
+        if active is not None:
+            query = query.where(Brand.active == active)
+
+        # Calcular total de resultados
+        total_query = select(func.count()).select_from(query.subquery())
+        total_result = await db.execute(total_query)
+        total = total_result.scalar_one()
+
+        # Obtener las marcas paginadas
+        result = await db.execute(
+            query.offset(skip).limit(limit).order_by(Brand.name)
+        )
+        brands = result.scalars().all()
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level > 2 and user_id:
+            await log_action(
+                db,
+                action="GETALL",
+                entity="Brand",
+                description=f"Consulta de marcas - filtros: search='{search}', active={active}, skip={skip}, limit={limit}",
+                user_id=user_id,
+            )
+            # db.flush()
+        return {"total": total, "items": brands}
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logging.exception("Error de base de datos en get_brands", exc_info=True)
+        raise  # Puedes relanzar aquí y manejarlo en el endpoint
+    except Exception as e:
+        await db.rollback()
+        logging.exception("Error inesperado en get_brands", exc_info=True)
+        raise
+  
+async def get_brand_by_id(
+    db: AsyncSession,
+    brand_id: UUID,
+    user_id: UUID = None  # Permite auditoría solo si hay user_id
+) -> Brand:
+    """
+    Recupera una marca por su UUID y registra auditoría si se encuentra.
+
+    Args:
+        db (AsyncSession): Sesión de base de datos asincrónica.
+        brand_id (UUID): ID de la marca a buscar.
+        user_id (UUID, opcional): Usuario que realiza la consulta (para registrar auditoría).
+
+    Returns:
+        Brand: Objeto encontrado.
+
+    Raises:
+        HTTPException:
+            - 404 si no se encuentra la marca.
+            - 500 si ocurre un error de base de datos.
+    """
+    try:
+        result = await db.execute(select(Brand).where(Brand.id == brand_id))
+        brand = result.scalars().first()
+
+        if not brand:
+            logger.warning(f"[GET_BRAND_BY_ID] marca no encontrada: {brand_id}")
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Marca con ID {brand_id} no encontrada"
+            )
+            
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level > 2 and user_id:
+            # Registrar auditoría si hay user_id
+            if user_id:
+                await log_action(
+                    db,
+                    action="GETID",
+                    entity="Brand",
+                    entity_id=brand.id,
+                    description=f"Consultó marca: {brand.name}",
+                    user_id=user_id
+                )
+            # No commit aquí, solo flush si log_action lo requiere
+            db.flush()
+        return brand
+
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logger.error(f"[GET_BRAND_BY_ID] Error al consultar marca {brand_id}: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error al consultar la marca"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception(f"[GET_BRAND_BY_ID] Error inesperado al consultar marca {brand_id}", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Ocurrió un error inesperado al consultar la marca"
+        )       
+
+
+# UPDATE (PUT = total)
+async def update_brand(
+    db: AsyncSession,
+    brand_id: UUID,
+    brand_in: 'BrandUpdate',
+    user_id: UUID
+):
+    """
+    Actualiza una marca y construye el log de auditoría.
+    - Retorna (brand_actualizada, log_de_auditoria)
+    - Si no hay cambios, retorna (brand, None)
+    - Si la marca no existe, retorna (None, None)
+    """
+    try:
+        # 1. Busca la marca existente
+        result = await db.execute(select(Brand).where(Brand.id == brand_id))
+        brand = result.scalars().first()
+        if not brand:
+            logger.info(f"[update_brand] Marca {brand_id} no encontrada.")
+            return None, None
+
+        cambios = []
+        
+        # 1. Detecta y aplica otros cambios
+        if brand.code != brand_in.code:
+            cambios.append(f"código: '{brand.code}' → '{brand_in.code}'")
+            brand.code = brand_in.code
+
+        # 2. Valida unicidad de nombre SOLO si cambia el nombre
+        if brand.name != brand_in.name:
+            existing = await db.execute(
+                select(Brand).where(Brand.name == brand_in.name, Brand.id != brand_id)
+            )
+            if existing.scalars().first():
+                logger.warning(f"[update_brand] Nombre duplicado: {brand_in.name}")
+                raise HTTPException(
+                    status_code=400,
+                    detail=f"Ya existe una marca con el nombre '{brand_in.name}'."
+                )
+            cambios.append(f"nombre: '{brand.name}' → '{brand_in.name}'")
+            brand.name = brand_in.name
+
+        # 3. Detecta y aplica otros cambios
+        if brand.description != brand_in.description:
+            cambios.append(f"descripción: '{brand.description}' → '{brand_in.description}'")
+            brand.description = brand_in.description
+        if brand.active != brand_in.active:
+            cambios.append(f"activo: {brand.active} → {brand_in.active}")
+            brand.active = brand_in.active
+
+        # 4. Si no hay cambios, retorna solo la marca (sin log)
+        if not cambios:
+            logger.info(f"[update_brand] No hubo cambios en la marca {brand_id}.")
+            return brand, None
+
+        # 5. Actualiza el timestamp
+        brand.updated_at = datetime.utcnow()
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level >= 1 and user_id:
+            # 6. Crea el log de auditoría con la descripción de cambios
+            log = await log_action(
+                db,
+                action="UPDATE",
+                entity="Brand",
+                entity_id=brand.id,
+                description=f"Cambios en la Marca: {', '.join(cambios)}",
+                user_id=user_id,
+            )
+
+        await db.flush()  # Asegura que ambos cambios estén en la sesión
+
+        logger.info(f"[update_brand] Marca {brand_id} actualizada por usuario {user_id}.")
+        return brand, log
+
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("[update_brand] Error de integridad: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=400,
+            detail="Error de integridad de datos: " + str(e.orig)
+        )
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logger.error("[update_brand] Error SQLAlchemy: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Error en la base de datos"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception("[update_brand] Error inesperado", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {str(e)}"
+        )
+        
+async def patch_brand(
+    db: AsyncSession,
+    brand_id: UUID,
+    brand_in: 'BrandPatch',
+    user_id: UUID  # ¡Para log de auditoría!
+) -> tuple:
+    """
+    Actualiza parcialmente una marca (PATCH) y registra log de auditoría.
+    Retorna (brand_actualizada, log_de_auditoria) o (None, None) si no existe.
+    """
+    try:
+         # 1. Busca la marca existente
+        result = await db.execute(select(Brand).where(Brand.id == brand_id))
+        brand = result.scalars().first()
+        if not brand:
+            logger.warning(f"[patch_brand] Marca {brand_id} no encontrada.")
+            return None, None
+
+        data = brand_in.dict(exclude_unset=True)
+        cambios = []
+
+        for field, value in data.items():
+            if hasattr(brand, field):
+                old_value = getattr(brand, field)
+                if old_value != value:
+                    cambios.append(f"{field}: '{old_value}' → '{value}'")
+                    setattr(brand, field, value)
+
+        if not cambios:
+            logger.info(f"[patch_brand] No hubo cambios en la Marca {brand_id}.")
+            return brand, None
+
+        brand.updated_at = datetime.utcnow()
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level >= 1 and user_id:
+            log = await log_action(
+                db,
+                action="PATCH",
+                entity="Brand",
+                entity_id=brand.id,
+                description=f"Actualización parcial: {', '.join(cambios)}",
+                user_id=user_id,
+            )
+
+        await db.flush()  # Asegura que los cambios y log estén listos para commit
+
+        logger.info(f"[patch_brand] Marca {brand_id} parcheada por usuario {user_id}. Cambios: {cambios}")
+        return brand, log
+
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("[patch_brand] Error de integridad: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=400,
+            detail="Error de integridad de datos: " + str(e.orig)
+        )
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logger.error("[patch_brand] Error SQLAlchemy: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Error en la base de datos"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception("[patch_brand] Error inesperado", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {str(e)}"
+        )
+
+4. router Brand ubicado en backend/app/routers donde backend es el proyecto
+
+from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from uuid import UUID
+from typing import List, Optional
+
+from app.schemas.brand import (
+    BrandCreate, BrandUpdate, BrandRead, BrandPatch, BrandImportResult, BrandListResponse
+)
+from app.crud.brand import (
+    create_brand, get_brands, get_brand_by_id, update_brand, patch_brand
+)
+from app.models.user import User
+from app.models.brand import Brand
+from app.dependencies.current_user import get_current_user
+from app.core.security import get_async_db
+from app.utils.audit import log_action
+import csv
+from io import StringIO
+from app.utils.audit_level import get_audit_level
+
+import logging
+logger = logging.getLogger(__name__)
+
+router = APIRouter(prefix="/brands", tags=["Brands"])
+# ==============================
+# CREATE - POST
+# ==============================
+@router.post("/", response_model=BrandRead)
+async def create_brand_endpoint(
+    brand_in: BrandCreate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        new_brand, log = await create_brand(db, brand_in, current_user.id)
+        if log:
+            db.add(log)
+        await db.commit()
+        # Opcional: log de éxito solo aquí (no es obligatorio, pero si quieres monitorear puedes dejarlo)
+        logger.info(f"Marca creada exitosamente: {new_brand.id} - {new_brand.name} por usuario {current_user.id}")
+        return BrandRead.model_validate(new_brand)
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("Error de integridad al crear marca: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Error de integridad de datos: " + str(e.orig)
+        )
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logger.error("Error de SQLAlchemy al crear marca: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error en la base de datos"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error interno al crear marca", exc_info=True)
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno: {str(e)}"
+        )
+
+# ==============================
+# GET ALL
+# ==============================
+@router.get("/", response_model=BrandListResponse)
+async def list_brands(
+    skip: int = Query(0, ge=0),
+    limit: int = Query(100, ge=1, le=1000),
+    search: Optional[str] = None,
+    active: Optional[bool] = None,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        result = await get_brands(db, skip, limit, search, active, current_user.id)
+        await db.commit()
+        return result
+    except SQLAlchemyError as e:
+        await db.rollback()
+        logger.error("Error de base de datos al listar marcas: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Ocurrió un error en la base de datos al obtener las marcas"
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error inesperado al listar marcas", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Ocurrió un error al obtener las marcas"
+        )
+
+# ==============================
+# GET BY ID
+# ==============================
+@router.get("/{brand_id}", response_model=BrandRead)
+async def read_brand(
+    brand_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        brand = await get_brand_by_id(db, brand_id, current_user.id)
+        await db.commit()   # Registrar la auditoría si la hubo
+        return BrandRead.model_validate(brand)
+    except HTTPException as e:
+        await db.rollback()
+        logger.error("HTTPException al obtener la marca: %s", e.detail, exc_info=True)
+        raise e
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error inesperado al obtener la marca por ID", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="Ocurrió un error al consultar la marca"
+        )
+        
+# ==============================
+# UPDATE - PUT
+# ==============================
+@router.put("/{brand_id}", response_model=BrandRead)
+async def update_brand_endpoint(
+    brand_id: UUID,
+    brand_in: BrandUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        updated, log = await update_brand(db, brand_id, brand_in, current_user.id)
+        if not updated:
+            raise HTTPException(status_code=404, detail="Marca no encontrada")
+        if log:
+            db.add(log)
+        await db.commit()
+        await db.refresh(updated)
+        return BrandRead.model_validate(updated)
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("Error de integridad al actualizar marca: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=400,
+            detail="Error de integridad (nombre duplicado u otra restricción)."
+        )
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error inesperado al actualizar marca", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {str(e)}"
+        )
+
+# ==============================
+# PARTIAL UPDATE - PATCH
+# ==============================
+@router.patch("/{brand_id}", response_model=BrandRead)
+async def patch_brand_endpoint(
+    brand_id: UUID,
+    brand_in: BrandPatch,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        updated, log = await patch_brand(db, brand_id, brand_in, current_user.id)
+        if not updated:
+            logger.warning(f"[patch_brand_endpoint] Marca {brand_id} no encontrada.")
+            raise HTTPException(status_code=404, detail="Marca no encontrada")
+        if log:
+            db.add(log)
+        await db.commit()
+        await db.refresh(updated)
+        logger.info(f"[patch_brand_endpoint] Marca {brand_id} actualizada parcialmente correctamente.")
+        return BrandRead.model_validate(updated)
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("Error de integridad al actualizar marca (PATCH): %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=400,
+            detail="Error de integridad (nombre duplicado u otra restricción)."
+        )
+    except HTTPException as e:
+        await db.rollback()
+        logger.error("HTTPException en patch_brand_endpoint: %s", e.detail, exc_info=True)
+        raise e
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error inesperado al actualizar marca (PATCH)", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {str(e)}"
+        )
+
+# ==============================
+# IMPORT MASSIVE BRANDS
+# ==============================
+@router.post("/import", status_code=201)
+async def import_brands(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    try:
+        content = await file.read()
+        csv_reader = csv.DictReader(StringIO(content.decode("utf-8")))
+        if csv_reader.fieldnames:
+            csv_reader.fieldnames = [h.strip().replace('\ufeff', '') for h in csv_reader.fieldnames]
+            logger.info(f"Headers después de limpieza: {csv_reader.fieldnames}")
+        brands = []
+        user_id = current_user.id
+        count = 0
+        for row in csv_reader:
+            try:
+                brand = Brand(
+                    code=row["code"],
+                    name=row["name"],
+                    description=row.get("description", ""),
+                    active=row.get("active", "true").lower() in ("true", "1", "yes", "si"),
+                    user_id=current_user.id
+                )
+                brands.append(brand)
+                count += 1
+            except Exception as row_err:
+                logger.warning(
+                    "Fila con error en importación de marcas (fila %d): %s", count + 1, row_err, exc_info=True
+                )
+                # Si prefieres abortar la importación ante fila errónea, lanza raise aquí
+
+        if not brands:
+            logger.warning("No se encontraron filas válidas para importar en el archivo CSV.")
+            raise HTTPException(
+                status_code=400,
+                detail="No se encontraron filas válidas para importar."
+            )
+            
+        db.add_all(brands)        
+        audit_level = await get_audit_level(db)    # Decidir si registrar el log según el nivel
+        if audit_level > 1 and user_id:        
+            await log_action(
+                db,
+                action="IMPORT",
+                entity="Brand",
+                description=f"Importación masiva: {len(brands)} marcas importadas.",
+                user_id=user_id
+            )
+        await db.commit()
+        logger.info("Importación masiva de marcas exitosa. Total importadas: %d", len(brands))
+        return {"ok": True, "imported": len(brands)}
+
+    except IntegrityError as e:
+        await db.rollback()
+        logger.error("Error de integridad en importación masiva: %s", e, exc_info=True)
+        raise HTTPException(
+            status_code=400,
+            detail=f"Error de integridad (marca duplicada): {str(e.orig)}"
+        )
+    except HTTPException as e:
+        await db.rollback()
+        logger.error("HTTPException en importación masiva: %s", e.detail, exc_info=True)
+        raise e
+    except Exception as e:
+        await db.rollback()
+        logger.exception("Error inesperado en importación masiva", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error interno: {str(e)}"
+        )
+
+##########################################################################
+###########################  Frontend Next.js  ###########################
+##########################################################################
+
+1. page ubicado en frontend/app/brands/page.tsx donde frontend es el proyecto
+
+"use client";
+// Importa el hook personalizado para gestionar marcas y el hook de autenticación
+import { useBrands } from "@/hooks/useBrands";
+import { useAuth } from "@/hooks/useAuth";
+import { useEffect, useState } from "react";
+import { BrandTable } from "@/components/BrandTable";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
+import { EditBrandModal } from "@/components/EditBrandModal";
+import { CreateBrandModal } from "@/components/CreateBrandModal";
+import { SpanishDate } from '@/components/SpanishDate';
+// Componente principal de la página de marcas
+export default function BrandsPage() {
+  // Estados para modales y acciones
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingToggle, setPendingToggle] = useState<{ id: string; value: boolean } | null>(null);
+  const [showCreate, setShowCreate] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const { token } = useAuth();
+  const [search, setSearch] = useState('');
+
+  // Hook personalizado para gestionar marcas y paginación
+  const {
+    brands,
+    total,
+    loading,
+    error,
+    refetch,
+    clearError,
+    updateBrand,
+    createBrand,
+    page,
+    pageSize,
+    totalPages,
+    setPage,
+    setPageSize
+  } = useBrands(token, search);
+
+  // Estados para edición y guardado
+  const [editing, setEditing] = useState<any | null>(null);
+  const [saving, setSaving] = useState(false);
+
+  useEffect(() => {
+    setIsClient(true);
+  }, [token]);
+
+  useEffect(() => { console.log("📊 Marcas actualizadas:", brands.length); }, [brands]);
+
+  useEffect(() => {
+    setPage(1);
+  }, [search, setPage]);
+
+  if (!isClient) return null;
+  if (!token) {
+    return (
+      <div className="p-6">
+        <h1 className="text-2xl font-bold text-red-600">No Token</h1>
+        <p>No se encontró token de autenticación</p>
+        <button onClick={() => window.location.href = '/login'} className="mt-4 bg-blue-600 text-white px-4 py-2 rounded">Ir a Login</button>
+      </div>
+    );
+  }
+
+  return (
+    <div className="p-6">
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded p-4 mb-6">
+          <p className="font-semibold text-red-700">{error}</p>
+          <button onClick={() => { clearError(); refetch(); }} className="mt-2 bg-red-600 text-white px-3 py-1 rounded text-sm">Reintentar</button>
+        </div>
+      )}
+
+      <div className="bg-white shadow rounded p-4 space-y-6">
+        {/* Encabezado y acciones */}
+        <div className="flex items-center justify-between">
+          <h3 className="font-semibold">Lista de Marcas ({total})</h3>
+          <div className="flex gap-2 items-center">
+            <span className="font-bold text-green-700 text-2xl mr-6">Marcas</span>
+            <button
+              onClick={() => refetch()}
+              title="Refrescar"
+              aria-label="Refrescar"
+              className="p-2 rounded bg-blue-600 text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-blue-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <polyline points="23 4 23 10 17 10" />
+                <polyline points="1 20 1 14 7 14" />
+                <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => setShowCreate(true)}
+              title="Nueva Marca"
+              aria-label="Nueva Marca"
+              className="p-2 rounded bg-green-600 text-white hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-green-500"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-4 w-4">
+                <line x1="12" y1="5" x2="12" y2="19" />
+                <line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
+        </div>
+        {/* Caja de búsqueda */}
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Buscar marca por nombre..."
+            value={search}
+            onChange={e => setSearch(e.target.value)}
+            className="border px-3 py-2 rounded w-full"
+          />
+        </div>
+
+        {/* Indicador de carga */}
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-12">
+            <span className="animate-spin h-8 w-8 border-4 border-blue-600 border-t-transparent rounded-full mb-4"></span>
+            <span className="text-blue-700 font-semibold text-lg">Cargando marcas...</span>
+          </div>
+        ) : (
+          <>
+            <BrandTable
+              brands={brands}
+              loading={loading}
+              onEdit={(b) => { setEditing(b); }}
+              onToggleActive={(id, val) => {
+                setPendingToggle({ id, value: val });
+                setConfirmOpen(true);
+              }}
+              currentPage={page}
+              pageSize={pageSize}
+            />
+
+            {/* Paginación y selección de tamaño de página */}
+            <div className="flex items-center gap-4 flex-wrap text-sm">
+              <div className="flex items-center gap-2">
+                <button
+                  className="px-2 py-1 border border-green-600 rounded disabled:opacity-40"
+                  onClick={() => setPage(1)}
+                  disabled={page === 1 || loading || totalPages === 0}
+                >&laquo;</button>
+                <button
+                  className="px-2 py-1 border border-green-600 rounded disabled:opacity-40"
+                  onClick={() => setPage(page - 1)}
+                  disabled={page === 1 || loading || totalPages === 0}
+                >&lsaquo;</button>
+                <span className="px-1">Página {page} de {totalPages}</span>
+                <button
+                  className="px-2 py-1 border-green-600 border rounded disabled:opacity-40"
+                  onClick={() => setPage(page + 1)}
+                  disabled={page === totalPages || loading || totalPages === 0}
+                >&rsaquo;</button>
+                <button
+                  className="px-2 py-1 border border-green-600 rounded disabled:opacity-40"
+                  onClick={() => setPage(totalPages)}
+                  disabled={page === totalPages || loading || totalPages === 0}
+                >&raquo;</button>
+              </div>              
+              <div className="flex items-center gap-2">
+                <label htmlFor="pageSize" className="text-gray-600">Filas:</label>
+                <select
+                  id="pageSize"
+                  className="border border-green-600 rounded px-2 py-1"
+                  value={pageSize}
+                  onChange={(e) => setPageSize(Number(e.target.value))}
+                  disabled={loading}
+                >
+                  {[5,10,20,50].map(s => <option key={s} value={s}>{s}</option>)}
+                </select>
+              </div>
+              <div className="text-gray-500">
+                {total > 0 ? (
+                  `Mostrando ${(page-1)*pageSize + 1}-${Math.min(page*pageSize, total)} de ${total}`
+                ) : (
+                  'No hay marcas para mostrar'
+                )}
+              </div>  
+              <SpanishDate />
+       
+            </div>
+          </>
+        )}
+
+        <ConfirmDialog
+          open={confirmOpen}
+          title={pendingToggle?.value ? "Confirmar activación" : "Confirmar inactivación"}
+          message={pendingToggle?.value ? "¿Está seguro que desea activar esta marca?" : "¿Está seguro que desea inactivar esta marca?"}
+          confirmText={pendingToggle?.value ? "Sí, activar" : "Sí, inactivar"}
+          cancelText="Cancelar"
+          onConfirm={async () => {
+            if (pendingToggle) {
+              // Actualiza el estado activo/inactivo de la marca
+              const brand = brands.find(b => b.id === pendingToggle.id);
+              if (brand) {
+                const updateData: any = {
+                  id: brand.id,
+                  name: brand.name,
+                  description: brand.description ?? undefined,
+                  active: pendingToggle.value
+                };
+                if (brand.code) updateData.code = brand.code;
+                await updateBrand(updateData);
+                await refetch();
+              }
+            }
+            setConfirmOpen(false);
+            setPendingToggle(null);
+          }}
+          onCancel={() => {
+            setConfirmOpen(false);
+            setPendingToggle(null);
+          }}
+        />
+      </div>
+      {/* Modal de edición de marca */}
+      <EditBrandModal
+        brand={editing}
+        saving={saving}
+        onClose={() => setEditing(null)}
+        onSave={async (data) => {
+          setSaving(true);
+          await updateBrand(data);
+          setSaving(false);
+          setEditing(null);
+          refetch();
+        }}
+      />
+      {/* Modal de creación de marca */}
+      <CreateBrandModal
+        open={showCreate}
+        saving={saving}
+        onClose={() => setShowCreate(false)}
+        onSave={async (data) => {
+          setSaving(true);
+          await createBrand(data);
+          setSaving(false);
+          setShowCreate(false);
+          refetch();
+        }}
+      />
+    </div>
+  );
+}
+
+2. BrandTable ubicado en frontend/components/BrandTable.tsx donde frontend es el proyecto
+
+import { Brand } from '@/app/types/brand';
+import { useState } from 'react';
+import { Eye, Pencil } from 'lucide-react';
+import { BotonAccion, BotonEstado } from '@/components/ui/buttons';
+
+interface BrandDetailModalProps { brand: Brand | null; onClose: () => void; }
+const BrandDetailModal: React.FC<BrandDetailModalProps> = ({ brand, onClose }) => {
+  if (!brand) return null;
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
+      <div className="bg-white w-full max-w-md rounded-lg shadow-xl p-6 relative">
+        <button onClick={onClose} className="absolute top-3 right-3 text-gray-400 hover:text-gray-600" aria-label="Cerrar">✕</button>
+        <h2 className="text-xl font-semibold mb-4">Detalle de Marca</h2>
+        <div className="space-y-2 text-sm">
+          <p><span className="font-medium">ID:</span> {brand.id}</p>
+          <p><span className="font-medium">Código:</span> {brand.code}</p> 
+          <p><span className="font-medium">Nombre:</span> {brand.name}</p>
+          <p><span className="font-medium">Descripción:</span> {brand.description || '—'}</p>
+          <p><span className="font-medium">Estado:</span> {brand.active ? 'Activa' : 'Inactiva'}</p>
+          {brand.createdAt && <p><span className="font-medium">Creada:</span> {new Date(brand.createdAt).toLocaleString()}</p>}
+          {brand.updatedAt && <p><span className="font-medium">Actualizada:</span> {new Date(brand.updatedAt).toLocaleString()}</p>} 
+          {brand.userId && <p><span className="font-medium">Usuario actualización:</span> {brand.userId}</p>}
+        </div>
+        <pre className="mt-4 bg-gray-100 rounded p-3 max-h-48 overflow-auto text-xs">{JSON.stringify(brand, null, 2)}</pre>
+        <div className="mt-6 flex justify-end">
+          <button onClick={onClose} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// ✅ SOLUCIÓN: SOLO UNA INTERFACE BrandTableProps COMBINADA
+export interface BrandTableProps {
+  brands: Brand[];
+  onEdit?: (brand: Brand) => void;
+  onToggleActive?: (id: string, value: boolean) => void;
+  loading?: boolean;
+  currentPage: number;      // ✅ Nuevo prop: página actual
+  pageSize: number;         // ✅ Nuevo prop: tamaño de página
+}
+
+export const BrandTable: React.FC<BrandTableProps> = ({
+  brands = [], // <-- valor por defecto
+  onEdit,
+  onToggleActive,
+  loading = false,
+  currentPage,              // ✅ Recibe la página actual
+  pageSize,                 // ✅ Recibe el tamaño de página
+}) => {
+  const [detailBrand, setDetailBrand] = useState<Brand | null>(null);
+  
+  // ✅ Calcula el número inicial basado en la página y tamaño
+  const startNumber = (currentPage - 1) * pageSize + 1;
+
+  if (loading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-4 bg-gray-200 rounded mb-4"></div>
+        <div className="space-y-3">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="h-4 bg-gray-200 rounded"></div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="overflow-x-auto rounded-lg shadow">
+      <table className="min-w-full table-auto border border-gray-200">
+        <thead>
+          <tr className="bg-gradient-to-r from-green-500 to-green-700">
+            <th className="px-3 py-2 text-left text-white font-bold uppercase tracking-wider w-12">N°</th>
+            <th className="px-3 py-2 text-left text-white font-bold uppercase tracking-wider w-32">Código</th>
+            <th className="px-3 py-2 text-left text-white font-bold uppercase tracking-wider w-48">Nombre</th>
+            <th className="px-2 py-2 text-center text-white font-bold uppercase tracking-wider w-20" title="Estado">Estado</th>
+            <th className="px-2 py-2 text-center text-white font-bold uppercase tracking-wider w-24" title="Acción">Acción</th>
+          </tr>
+        </thead>
+        <tbody className="bg-white divide-y divide-gray-200">
+          {brands.length === 0 ? (
+            <tr>
+              <td colSpan={5} className="text-center py-8 text-gray-500 text-lg">
+                <span role="img" aria-label="Caja vacía">📦</span> No existen marcas disponibles
+              </td>
+            </tr>
+          ) : (
+            brands.map((brand, idx) => (
+              <tr key={brand.id} className="hover:bg-gray-50 transition-colors">
+                {/* ✅ Número consecutivo global (no se reinicia por página) */}
+                <td className="px-3 py-2 text-sm text-gray-900 w-12 text-center">
+                  {startNumber + idx}
+                </td>
+                <td className="px-3 py-2 text-sm font-mono text-gray-900 w-32 truncate leading-tight" title={brand.code}>{brand.code}</td>
+                <td className="px-3 py-2 text-sm font-medium text-gray-900 w-48 truncate leading-tight" title={brand.name}>{brand.name}</td>
+                <td className="px-2 py-2 text-sm text-center">
+                  <BotonEstado
+                    active={!!brand.active}
+                    onClick={() => onToggleActive && onToggleActive(brand.id, !brand.active)}
+                    titleWhenActive="Desactivar marca"
+                    titleWhenInactive="Activar marca"
+                  />
+                </td>
+                <td className="px-2 py-2 text-sm font-medium flex flex-wrap gap-1 justify-center">
+                  <BotonAccion
+                    type="button"
+                    onClick={() => setDetailBrand(brand)}
+                    aria-label="Ver marca"
+                    title="Ver marca"
+                    className="text-indigo-600 hover:text-indigo-700"
+                  >
+                    <Eye className="h-4 w-4" />
+                  </BotonAccion>
+                  {onEdit && (
+                    <BotonAccion
+                      type="button"
+                      onClick={() => onEdit(brand)}
+                      aria-label="Editar marca"
+                      title="Editar marca"
+                      className="text-blue-600 hover:text-blue-700"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </BotonAccion>
+                  )}
+                </td>
+              </tr>
+            ))
+          )}
+        </tbody>
+      </table>
+      <BrandDetailModal brand={detailBrand} onClose={() => setDetailBrand(null)} />
+    </div>
+  );
+};
+
+3. EditBrandModal ubicado en frontend/components/EditBrandModal.tsx donde frontend es el proyecto
+
+import React, { useEffect, useState } from 'react';
+import { Brand } from '@/app/types/brand';
+import { ToggleLeft, ToggleRight } from 'lucide-react';
+
+interface EditBrandModalProps {
+  brand: Brand | null;
+  onClose: () => void;
+  onSave: (data: { id: string; name: string; description?: string; active: boolean }) => Promise<void> | void;
+  saving?: boolean;
+}
+
+export const EditBrandModal: React.FC<EditBrandModalProps> = ({ brand, onClose, onSave, saving = false }) => {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [localError, setLocalError] = useState<string | null>(null);
+  const [active, setActive] = useState<boolean>(true);
+
+  useEffect(() => {
+    if (brand) {
+      setCode(brand.code || '');
+      setName(brand.name || '');
+      setDescription(brand.description || '');
+      setActive(!!brand.active);
+      setLocalError(null);
+    }
+  }, [brand]);
+
+  if (!brand) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) {
+      setLocalError('El código es obligatorio');
+      return;
+    }
+    if (!name.trim()) {
+      setLocalError('El nombre es obligatorio');
+      return;
+    }
+    const payload = {
+      id: brand.id,
+      code: code.trim(),
+      name: name.trim(),
+      description: description.trim() || undefined,
+      active: Boolean(active)
+    };
+    await onSave(payload);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white w-full max-w-lg rounded-lg shadow-xl border border-gray-200">
+        <div className="flex items-center justify-between px-5 py-3 border-b">
+          <h2 className="text-lg font-semibold">Editar Marca</h2>
+          <button onClick={onClose} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {localError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-2 rounded">{localError}</div>}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Código</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              disabled={saving}
+              maxLength={50}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Nombre</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={saving}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Descripción</label>
+            <textarea
+              className="w-full border rounded px-3 py-2 text-sm resize-y min-h-[80px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActive(a => !a)}
+                disabled={saving}
+                className="flex items-center gap-2 px-3 py-2 rounded bg-white transition-colors focus:outline-none disabled:opacity-50"
+                aria-pressed={active}
+                aria-label={active ? 'Desactivar marca' : 'Activar marca'}
+                title={active ? 'Desactivar marca' : 'Activar marca'}
+              >
+                {active ? <ToggleRight className="h-6 w-6 text-green-600" /> : <ToggleLeft className="h-6 w-6 text-gray-400" />}
+                <span
+                  className={`inline-block text-[13px] font-semibold px-3 py-1 rounded-full border text-center align-middle transition-colors duration-200 min-w-[70px] ${active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-300'}`}
+                >
+                  {active ? 'Activa' : 'Inactiva'}
+                </span>
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
+            >Cancelar</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded bg-blue-600 text-white hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+
+4. CreateBrandModal ubicado en frontend/components/CreateBrandModal.tsx donde frontend es el proyecto
+
+import React, { useState, useEffect } from 'react';
+import { ToggleLeft, ToggleRight } from 'lucide-react';
+
+interface CreateBrandModalProps {
+  open: boolean;
+  onClose: () => void;
+  onSave: (data: { code: string; name: string; description?: string; active: boolean }) => Promise<void> | void;
+  saving?: boolean;
+}
+
+export const CreateBrandModal: React.FC<CreateBrandModalProps> = ({ open, onClose, onSave, saving = false }) => {
+  const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [description, setDescription] = useState('');
+  const [active, setActive] = useState(true);
+  const [localError, setLocalError] = useState<string | null>(null);
+
+
+  useEffect(() => {
+    if (open) setActive(true);
+  }, [open]);
+
+  if (!open) return null;
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!code.trim()) {
+      setLocalError('El código es obligatorio');
+      return;
+    }
+    if (!name.trim()) {
+      setLocalError('El nombre es obligatorio');
+      return;
+    }
+    await onSave({
+      code: code.trim(),
+      name: name.trim(),
+      description: description.trim() || undefined,
+      active: Boolean(active)
+    });
+    setCode('');
+    setName('');
+    setDescription('');
+    setActive(true);
+    setLocalError(null);
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+      <div className="bg-white w-full max-w-lg rounded-lg shadow-xl border border-gray-200">
+        <div className="flex items-center justify-between px-5 py-3 border-b">
+          <h2 className="text-lg font-semibold">Nueva Marca</h2>
+          <button onClick={onClose} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600">✕</button>
+        </div>
+        <form onSubmit={handleSubmit} className="p-5 space-y-4">
+          {localError && <div className="text-sm text-red-600 bg-red-50 border border-red-200 p-2 rounded">{localError}</div>}
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Código</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none"
+              value={code}
+              onChange={(e) => setCode(e.target.value)}
+              required
+              disabled={saving}
+              maxLength={50}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Nombre</label>
+            <input
+              className="w-full border rounded px-3 py-2 text-sm focus:outline-none"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              required
+              disabled={saving}
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-xs font-medium text-gray-600">Descripción</label>
+            <textarea
+              className="w-full border rounded px-3 py-2 text-sm resize-y min-h-[80px] focus:ring-2 focus:ring-blue-500 focus:outline-none"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              disabled={saving}
+            />
+          </div>
+          <div className="space-y-1">
+            <div className="flex items-center gap-2">
+              <button
+                type="button"
+                onClick={() => setActive(a => !a)}
+                disabled={saving}
+                className="flex items-center gap-2 px-3 py-2 rounded bg-white transition-colors focus:outline-none disabled:opacity-50"
+                aria-pressed={active}
+                aria-label={active ? 'Desactivar marca' : 'Activar marca'}
+                title={active ? 'Desactivar marca' : 'Activar marca'}
+              >
+                {active ? <ToggleRight className="h-6 w-6 text-green-600" /> : <ToggleLeft className="h-6 w-6 text-gray-400" />}
+                <span
+                  className={`inline-block text-[13px] font-semibold px-3 py-1 rounded-full border text-center align-middle transition-colors duration-200 min-w-[70px] ${active ? 'bg-green-50 text-green-700 border-green-200' : 'bg-gray-100 text-gray-600 border-gray-300'}`}
+                >
+                  {active ? 'Activa' : 'Inactiva'}
+                </span>
+              </button>
+            </div>
+          </div>
+          <div className="flex items-center justify-end gap-2 pt-2">
+            <button
+              type="button"
+              onClick={onClose}
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded border bg-white hover:bg-gray-50 disabled:opacity-50"
+            >Cancelar</button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 text-sm rounded bg-green-600 text-white hover:bg-green-700 disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving && <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />}
+              Guardar
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+5. useBrands ubicado en frontend/hooks/useBrands.tx donde frontend es el proyecto
+
+import { useState, useEffect, useCallback } from "react";
+import { Brand, CreateBrandData, UpdateBrandData, mapBrand, BrandListResponseDTO } from "@/app/types/brand";
+import { brandService } from "@/app/services/brandService";
+
+// Type guards para verificar la estructura de la respuesta
+function isBrandListResponseDTO(response: any): response is BrandListResponseDTO {
+  return response && typeof response === 'object' && 'items' in response && Array.isArray(response.items);
+}
+
+function isBrandArray(response: any): response is any[] {
+  return Array.isArray(response);
+}
+
+// Hook principal para gestionar el listado y acciones sobre marcas
+export function useBrands(token: string | null, search: string = "") {
+  const [brands, setBrands] = useState<Brand[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [total, setTotal] = useState<number>(0);
+  const [page, setPage] = useState<number>(1);
+  const [pageSize, setPageSize] = useState<number>(10);
+
+  // Función para traducir errores técnicos a mensajes amigables
+  const handleError = (err: unknown): string => {
+    console.error("Error completo en useBrand:", err);
+    if (err instanceof Error) {
+      if (err.message.includes("401")) return "Tu sesión ha expirado. Por favor, inicia sesión nuevamente.";
+      if (err.message.includes("403")) return "No tienes permisos para acceder a esta información.";
+      if (err.message.includes("404")) return "El recurso solicitado no fue encontrado.";
+      if (err.message.includes("500")) return "Error interno del servidor. Intenta nuevamente más tarde.";
+      if (err.message.includes("timeout") || err.message.includes("Network")) 
+        return "Tiempo de espera agotado. Verifica tu conexión.";
+      return err.message;
+    }
+    return "Error inesperado al procesar la solicitud";
+  };
+
+  // Función para obtener marcas desde el backend, considerando paginación
+  const fetchBrands = useCallback(async () => {
+    if (!token || token.trim() === "") {
+      setError("Token de autenticación no válido");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const skip = (page - 1) * pageSize;
+      // Envía el filtro de búsqueda al backend
+      const response = await brandService.getBrands(token, { skip, limit: pageSize, search });
+      // ✅ VERIFICACIÓN MEJORADA DE TIPOS
+      if (response && typeof response === 'object' && 'items' in response && Array.isArray(response.items)) {
+        setBrands(response.items.map(mapBrand));
+        setTotal(response.total ?? response.items.length);
+      } else if (Array.isArray(response)) {
+        setBrands(response.map(mapBrand));
+        setTotal(response.length);
+      } else {
+        setBrands([]);
+        setTotal(0);
+        console.warn("Formato de respuesta no reconocido:", response);
+      }
+    } catch (err) {
+      const errorMsg = handleError(err);
+      setError(errorMsg);
+      // --- Manejo automático de token inválido/expirado ---
+      // Si el error indica token inválido, redirige al login
+      if (errorMsg.includes('Token de autenticación inválido') || errorMsg.includes('Token inválido') || errorMsg.includes('expirado')) {
+        // Redirección automática para mejor UX
+        window.location.href = '/login';
+      }
+    } finally {
+      setLoading(false);
+    }
+  }, [token, page, pageSize, search]);
+
+  // Efecto para cargar marcas cada vez que cambian los parámetros
+  useEffect(() => {
+    fetchBrands();
+  }, [fetchBrands]);
+
+  // Calcula el total de páginas para la paginación
+  const totalPages = Math.ceil(total / pageSize) || 1;
+
+  // Función para cambiar de página, asegurando que esté dentro de los límites
+  const goToPage = useCallback((newPage: number) => {
+    const validatedPage = Math.max(1, Math.min(newPage, totalPages));
+    setPage(validatedPage);
+  }, [totalPages]);
+
+  // Función para cambiar el tamaño de página
+  const changePageSize = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setPage(1); // Reiniciar a la primera página
+  }, []);
+
+  // Función para crear una nueva marca
+  const createBrand = async (brandData: CreateBrandData): Promise<boolean> => {
+    if (!token || token.trim() === "") {
+      setError("Token de autenticación no válido");
+      return false;
+    }
+    try {
+      setError(null);
+      const newBrandDTO = await brandService.createBrand(brandData, token);
+      setBrands((prev) => [...prev, mapBrand(newBrandDTO)]);
+      setTotal((t) => t + 1);
+      return true;
+    } catch (err) {
+      setError(handleError(err));
+      return false;
+    }
+  };
+
+  // Función para actualizar una marca existente
+  const updateBrand = async (brandData: UpdateBrandData): Promise<boolean> => {
+    if (!token || token.trim() === "") {
+      setError("Token de autenticación no válido");
+      return false;
+    }
+    try {
+      setError(null);
+      const updatedBrandDTO = await brandService.updateBrand(brandData.id, brandData, token);
+      const updated = mapBrand(updatedBrandDTO);
+      setBrands((prev) => prev.map((b) => (b.id === updated.id ? updated : b)));
+      return true;
+    } catch (err) {
+      setError(handleError(err));
+      return false;
+    }
+  };
+
+  // Función para eliminar una marca
+  const deleteBrand = async (id: string): Promise<boolean> => {
+    if (!token || token.trim() === "") {
+      setError("Token de autenticación no válido");
+      return false;
+    }
+    try {
+      setError(null);
+      await brandService.deleteBrand(id, token);
+      setBrands((prev) => prev.filter((b) => b.id !== id));
+      setTotal((t) => Math.max(0, t - 1));
+      return true;
+    } catch (err) {
+      setError(handleError(err));
+      return false;
+    }
+  };
+
+  // Retorna todas las funciones y estados necesarios para el frontend
+  return {
+    brands,
+    loading,
+    error,
+    refetch: fetchBrands,
+    total,
+    page,
+    pageSize,
+    totalPages,
+    setPage: goToPage,
+    setPageSize: changePageSize,
+    createBrand,
+    updateBrand,
+    deleteBrand,
+    clearError: () => setError(null),
+  };
+}
+
+6. brandService ubicado en frontend/app/services/brandService.ts donde frontend es el proyecto
+
+import { BrandListResponseDTO, CreateBrandData, UpdateBrandData, BrandReadDTO } from '@/app/types/brand';
+import { authService } from './authService';
+
+class BrandService {
+  private apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+  private getBackendUrl() {
+    return this.apiUrl.replace('/api', '');
+  }
+
+  private async makeRequest(endpoint: string, options: RequestInit = {}) {
+    const backendUrl = this.getBackendUrl();
+    const url = `${backendUrl}${endpoint}`;
+
+    console.group('🚀 BrandService Request');
+    console.log('📡 URL:', url);
+    console.log('🔧 Method:', options.method || 'GET');
+    console.log('🔑 Headers:', options.headers);
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      console.log('📥 Response Status:', response.status);
+      console.log('📥 Response OK:', response.ok);
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('❌ Error Response:', errorText);
+        console.groupEnd();
+
+        if (response.status === 401) {
+          throw new Error('Token de autenticación inválido o expirado');
+        }
+        if (response.status === 403) {
+          throw new Error('No tienes permisos para acceder a este recurso');
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Error del servidor'}`);
+      }
+
+      const data = await response.json();
+      console.log('✅ Response Data:', data);
+      console.groupEnd();
+
+      return data;
+    } catch (error) {
+      console.error('💥 Request Error:', error);
+      console.groupEnd();
+      throw error;
+    }
+  }
+
+  async getBrands(tokenOrParams?: string | {
+    skip?: number;
+    limit?: number; 
+    search?: string;
+    active?: boolean;
+  }, params?: {
+    skip?: number;
+    limit?: number; 
+    search?: string;
+    active?: boolean;
+  }): Promise<BrandListResponseDTO> {
+    console.log('🎯 getBrands called');
+
+    let authToken: string;
+    let queryParams: any = {};
+
+    if (typeof tokenOrParams === 'string') {
+      authToken = tokenOrParams;
+      queryParams = params || {};
+    } else {
+      authToken = authService.getToken() || '';
+      queryParams = tokenOrParams || {};
+    }
+
+    if (!authToken) {
+      throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+    }
+
+    console.log('🔑 Using token:', authToken?.substring(0, 20) + '...');
+
+    const searchParams = new URLSearchParams();
+    if (queryParams.skip !== undefined) searchParams.append('skip', queryParams.skip.toString());
+    if (queryParams.limit !== undefined) searchParams.append('limit', queryParams.limit.toString());
+    if (queryParams.search) searchParams.append('search', queryParams.search);
+    if (queryParams.active !== undefined) searchParams.append('active', queryParams.active.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/brands/${queryString ? `?${queryString}` : ''}`;
+
+  return await this.makeRequest(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+  }
+
+  async getBrand(id: string, token: string): Promise<BrandReadDTO> {
+    return await this.makeRequest(`/brands/${id}`, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+
+  async createBrand(brandData: CreateBrandData, token: string): Promise<BrandReadDTO> {
+    return await this.makeRequest('/brands/', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(brandData),
+    });
+  }
+
+  async updateBrand(id: string, brandData: UpdateBrandData, token: string): Promise<BrandReadDTO> {
+    return await this.makeRequest(`/brands/${id}`, {
+      method: 'PUT',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+      body: JSON.stringify(brandData),
+    });
+  }
+
+  async deleteBrand(id: string, token: string): Promise<any> {
+    return await this.makeRequest(`/brands/${id}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+      },
+    });
+  }
+}
+
+export const brandService = new BrandService();
+
+7. brand ubicado en frontend/app/types/brand.ts donde frontend es el proyecto
+
+// Representación interna (frontend) de una Marca.
+// Usamos id como string (UUID del backend) y camelCase para fechas.
+export interface Brand {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string | null;
+  active?: boolean;
+  userId?: string; // user_id en backend
+  createdAt?: string; // created_at en backend
+  updatedAt?: string | null; // updated_at en backend
+}
+
+// Respuesta estándar del endpoint GET /brands (BrandListResponse backend)
+export interface BrandListResponseDTO {
+  total: number;
+  items: BrandReadDTO[];
+}
+
+// Forma exacta que devuelve el backend (BrandRead)
+export interface BrandReadDTO {
+  id: string;
+  name: string;
+  code?: string;
+  description?: string | null;
+  active?: boolean;
+  user_id: string;
+  created_at: string;
+  updated_at?: string | null;
+}
+
+export interface CreateBrandData {
+  code: string;
+  name: string;
+  description?: string;
+  active?: boolean;
+}
+
+export interface UpdateBrandData extends Partial<CreateBrandData> {
+  id: string;
+  code?: string;
+}
+
+// Utilidad de transformación DTO -> Brand
+export function mapBrand(dto: BrandReadDTO): Brand {
+  return {
+    id: dto.id,
+    name: dto.name,
+    code: dto.code,
+    description: dto.description,
+    active: dto.active,
+    userId: dto.user_id,
+    createdAt: dto.created_at,
+    updatedAt: dto.updated_at ?? undefined,
+  };
+}
+
+
+Todo el endpoint PaymentTerms debe contener también fuertes validaciones de datos y de cibersegurdidad estructuradas y con la estructura 
+reutilizable para todos los modelos del proyecto para implementación en la nube.
+
+El módelo de PaymentTerm es el siguientes
+
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query, Request
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from typing import Optional, List
+import csv
+from io import StringIO
+import time
+from slowapi import Limiter
+from slowapi.util import get_remote_address
+
+from app.dependencies.current_user import get_current_user
+from app.core.security import get_async_db
+from app.models.user import User
+from app.crud.payment_term import (
+    create_payment_term, 
+    get_payment_terms, 
+    get_payment_term_by_id, 
+    update_payment_term, 
+    delete_payment_term
+)
+from app.schemas.payment_term import (
+    PaymentTermCreate, 
+    PaymentTermUpdate, 
+    PaymentTermResponse,  # Cambiado de PaymentTermRead a PaymentTermResponse
+    PaymentTermListResponse,
+    PaymentTermImportResult
+)
+from app.validators.payment_terms.create import validate_payment_term_create
+from app.validators.payment_terms.read import validate_pagination_parameters, validate_search_parameter, validate_payment_term_id
+from app.validators.payment_terms.update import validate_payment_term_update
+from app.validators.payment_terms.import_csv import validate_csv_file, validate_csv_headers, validate_csv_row
+from app.validators.payment_terms.business_rules import validate_payment_term_business_rules
+from app.validators.base import ValidationError
+
+limiter = Limiter(key_func=get_remote_address)
+router = APIRouter(prefix="/paymentterms", tags=["PaymentTerms"])
+
+@router.post("/", response_model=PaymentTermResponse, status_code=status.HTTP_201_CREATED)
+@limiter.limit("10/minute")
+async def create_payment_term_endpoint(
+    request: Request,
+    payment_term_in: PaymentTermCreate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crear un nuevo término de pago
+    """
+    try:
+        start_time = time.time()
+        
+        # Validar datos de entrada
+        payment_term_data = payment_term_in.model_dump()
+        
+        # Validar reglas de negocio
+        validate_payment_term_business_rules(payment_term_data)
+        
+        # Validar datos contra base de datos
+        validated_data = await validate_payment_term_create(db, payment_term_data)
+        
+        # Crear en base de datos
+        new_payment_term = await create_payment_term(
+            db=db, 
+            payment_term_data=validated_data, 
+            user_id=current_user.id
+        )
+        
+        await db.commit()
+        await db.refresh(new_payment_term)
+        
+        # Prevenir timing attacks
+        elapsed = time.time() - start_time
+        if elapsed < 0.1:
+            time.sleep(0.1 - elapsed)
+        
+        return PaymentTermResponse.model_validate(new_payment_term)
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+@router.get("/", response_model=PaymentTermListResponse)
+@limiter.limit("60/minute")
+async def list_payment_terms(
+    request: Request,
+    skip: int = Query(0, ge=0, description="Número de registros a saltar"),
+    limit: int = Query(100, ge=1, le=1000, description="Límite de registros por página"),
+    search: Optional[str] = Query(None, min_length=1, max_length=100, description="Término de búsqueda"),
+    active: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Listar términos de pago con paginación y filtros
+    """
+    try:
+        # Validar parámetros
+        validate_pagination_parameters(skip, limit)
+        validated_search = validate_search_parameter(search)
+        
+        # Obtener datos
+        payment_terms, total = await get_payment_terms(
+            db=db,
+            skip=skip,
+            limit=limit,
+            search=validated_search,
+            active=active,
+            user_id=current_user.id
+        )
+        
+        return PaymentTermListResponse(
+            items=payment_terms,
+            total=total,
+            skip=skip,
+            limit=limit
+        )
+
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+@router.get("/{payment_term_id}", response_model=PaymentTermResponse)
+@limiter.limit("60/minute")
+async def read_payment_term(
+    request: Request,
+    payment_term_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtener un término de pago por ID
+    """
+    try:
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Obtener datos
+        payment_term = await get_payment_term_by_id(db, payment_term_id, current_user.id)
+        
+        if not payment_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        return PaymentTermResponse.model_validate(payment_term)
+        
+    except ValidationError as e:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+@router.put("/{payment_term_id}", response_model=PaymentTermResponse)
+@limiter.limit("10/minute")
+async def update_payment_term_endpoint(
+    request: Request,
+    payment_term_id: UUID,
+    payment_term_in: PaymentTermUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Actualizar un término de pago
+    """
+    try:
+        start_time = time.time()
+        
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Verificar que exista
+        existing_term = await get_payment_term_by_id(db, payment_term_id, current_user.id)
+        if not existing_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        # Validar datos
+        update_data = payment_term_in.model_dump(exclude_unset=True)
+        
+        if not update_data:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="No se proporcionaron datos para actualizar"
+            )
+        
+        # Validar reglas de negocio si aplican
+        if any(field in update_data for field in ['net_days', 'discount_percent', 'discount_days', 'basis']):
+            validate_payment_term_business_rules(update_data)
+        
+        # Validar datos contra base de datos
+        validated_data = await validate_payment_term_update(
+            db=db,
+            payment_term_id=payment_term_id,
+            update_data=update_data
+        )
+        
+        # Actualizar en base de datos
+        updated_term = await update_payment_term(
+            db=db,
+            payment_term_id=payment_term_id,
+            payment_term_data=validated_data,
+            user_id=current_user.id
+        )
+        
+        await db.commit()
+        await db.refresh(updated_term)
+        
+        # Prevenir timing attacks
+        elapsed = time.time() - start_time
+        if elapsed < 0.1:
+            time.sleep(0.1 - elapsed)
+        
+        return PaymentTermResponse.model_validate(updated_term)
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except ValueError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+@router.delete("/{payment_term_id}", status_code=status.HTTP_204_NO_CONTENT)
+@limiter.limit("5/minute")
+async def delete_payment_term_endpoint(
+    request: Request,
+    payment_term_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Eliminar un término de pago
+    """
+    try:
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Verificar que exista
+        existing_term = await get_payment_term_by_id(db, payment_term_id, current_user.id)
+        if not existing_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        # Eliminar de base de datos
+        deleted = await delete_payment_term(db, payment_term_id, current_user.id)
+        
+        if not deleted:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        await db.commit()
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error interno del servidor: {str(e)}"
+        )
+
+@router.post("/import", response_model=PaymentTermImportResult, status_code=status.HTTP_201_CREATED)
+@limiter.limit("2/minute")
+async def import_payment_terms(
+    request: Request,
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Importar términos de pago desde archivo CSV
+    """
+    try:
+        # Validar archivo
+        validate_csv_file(file)
+        
+        # Leer contenido
+        content = await file.read()
+        csv_content = content.decode("utf-8")
+        
+        # Validar encoding
+        try:
+            csv_content.encode('utf-8').decode('utf-8')
+        except UnicodeDecodeError:
+            raise ValidationError("El archivo tiene un encoding no válido. Use UTF-8.")
+        
+        # Procesar CSV
+        csv_reader = csv.DictReader(StringIO(csv_content))
+        
+        # Validar headers
+        validate_csv_headers(csv_reader.fieldnames)
+        
+        # Procesar filas
+        imported_count = 0
+        error_count = 0
+        error_details = []
+        
+        for row_number, row in enumerate(csv_reader, 1):
+            try:
+                validated_row = validate_csv_row(row, row_number)
+                
+                # Validar reglas de negocio
+                validate_payment_term_business_rules(validated_row)
+                
+                # Crear término de pago
+                payment_term_data = {
+                    'code': validated_row["code"],
+                    'name': validated_row["name"],
+                    'description': validated_row.get("description", ""),
+                    'net_days': validated_row["net_days"],
+                    'discount_percent': validated_row["discount_percent"],
+                    'discount_days': validated_row["discount_days"],
+                    'basis': validated_row["basis"],
+                    'active': validated_row.get("active", True)
+                }
+                
+                # Validar y crear
+                validated_data = await validate_payment_term_create(db, payment_term_data)
+                await create_payment_term(db, validated_data, current_user.id)
+                
+                imported_count += 1
+                
+            except ValidationError as ve:
+                error_count += 1
+                error_details.append(f"Fila {row_number}: {str(ve)}")
+            except Exception as e:
+                error_count += 1
+                error_details.append(f"Fila {row_number}: Error inesperado - {str(e)}")
+        
+        await db.commit()
+        
+        return PaymentTermImportResult(
+            success=True,
+            message=f"Importación completada: {imported_count} importados, {error_count} errores",
+            imported_count=imported_count,
+            error_count=error_count,
+            errors=error_details[:10]  # Limitar detalles de error
+        )
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=str(e))
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error durante la importación: {str(e)}"
+        )
+		
+Los campos del modelo PaymentTerms son los siguientes
+
+class PaymentTerm(Base):
+    __tablename__ = "payment_terms"
+
+    id = Column(UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
+    code = Column(String(10), unique=True, nullable=False)
+    name = Column(String(100), nullable=False)
+    description = Column(String(500), default="")
+    net_days = Column(Integer, nullable=False, default=0)
+    discount_percent = Column(Float, nullable=False, default=0.0)
+    discount_days = Column(Integer, nullable=False, default=0)
+    basis = Column(String(20), nullable=False, default="Factura")
+    active = Column(Boolean, default=True)
+    user_id = Column(UUID(as_uuid=True), nullable=False)
+    
+    # created_at se establece solo al crear
+    created_at = Column(DateTime(timezone=True), server_default=func.now(), nullable=False)
+    
+    # updated_at puede ser NULL inicialmente y se actualiza solo con modificaciones
+    updated_at = Column(DateTime(timezone=True), nullable=True, onupdate=func.now())
+	
+Favor sustentar cada elemento registrado en la respuesta explicando cual es su aporte al proyecto.
+
+Lo último que me entregaste fue esto.
+
+6. Frontend: Service (frontend/app/services/paymentTermService.ts)
+typescript
+import { 
+  PaymentTermListResponseDTO, 
+  CreatePaymentTermData, 
+  UpdatePaymentTermData, 
+  PaymentTermReadDTO 
+} from '@/app/types/paymentTerm';
+import { authService } from './authService';
+
+class PaymentTermService {
+  private apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:8000/api';
+
+  private getBackendUrl() {
+    return this.apiUrl.replace('/api', '');
+  }
+
+  private async makeRequest(endpoint: string, options: RequestInit = {}) {
+    const backendUrl = this.getBackendUrl();
+    const url = `${backendUrl}${endpoint}`;
+
+    try {
+      const response = await fetch(url, {
+        ...options,
+        headers: {
+          'Content-Type': 'application/json',
+          ...options.headers,
+        },
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        
+        if (response.status === 401) {
+          throw new Error('Token de autenticación inválido o expirado');
+        }
+        if (response.status === 403) {
+          throw new Error('No tienes permisos para acceder a este recurso');
+        }
+
+        throw new Error(`HTTP ${response.status}: ${errorText || 'Error del servidor'}`);
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Request Error:', error);
+      throw error;
+    }
+  }
+
+  async getPaymentTerms(tokenOrParams?: string | {
+    skip?: number;
+    limit?: number; 
+    search?: string;
+    active?: boolean;
+  }, params?: {
+    skip?: number;
+    limit?: number; 
+    search?: string;
+    active?: boolean;
+  }): Promise<PaymentTermListResponseDTO> {
+    let authToken: string;
+    let queryParams: any = {};
+
+    if (typeof tokenOrParams === 'string') {
+      authToken = tokenOrParams;
+      queryParams = params || {};
+    } else {
+      authToken = authService.getToken() || '';
+      queryParams = tokenOrParams || {};
+    }
+
+    if (!authToken) {
+      throw new Error('No hay token de autenticación. Por favor, inicia sesión.');
+    }
+
+    const searchParams = new URLSearchParams();
+    if (queryParams.skip !== undefined) searchParams.append('skip', queryParams.skip.toString());
+    if (queryParams.limit !== undefined) searchParams.append('limit', queryParams.limit.toString());
+    if (queryParams.search) searchParams.append('search', queryParams.search);
+    if (queryParams.active !== undefined) searchParams.append('active', queryParams.active.toString());
+
+    const queryString = searchParams.toString();
+    const endpoint = `/paymentterms/${queryString ? `?${queryString}` : ''}`;
+
+    return await this.makeRequest(endpoint, {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${authToken}`,
+      },
+    });
+  }
+
+Por favor continuar.
+		
+		

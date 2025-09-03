@@ -1,0 +1,794 @@
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | [cached since 2477s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | [cached since 1957s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | [cached since 2477s ago] ('audit_level',)
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | [cached since 2477s ago] (UUID('918259a8-7736-419d-8d9a-6e364d3e7bc0'), 'GET', 'PaymentTerm', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'), 'Consultó término de pago: ../../etc/passwd', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 00:28:18 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | [generated in 0.00361s] ('system@example.com',)
+2025-08-30 01:13:00 | WARNING | passlib.handlers.bcrypt | (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-08-30 01:13:00 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | [generated in 0.00103s] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | [generated in 0.00210s] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | [generated in 0.00191s] ('audit_level',)
+2025-08-30 01:13:09 | WARNING | app.crud.payment_term | Error en auditoría: log_action() got an unexpected keyword argument 'security_level'
+2025-08-30 01:13:09 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | [generated in 0.00275s] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:45:18 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 01:45:18 | WARNING | app.routers.payment_term | Error de validación en importación: Header requerido faltante: 'code'
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | [cached since 157.5s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:47:56 | WARNING | app.routers.payment_term | Error en fila 12: El campo 'Fila 12 - code' no puede exceder 10 caracteres
+2025-08-30 01:47:56 | WARNING | app.routers.payment_term | Error en fila 16: El campo 'Fila 16 - code' no puede exceder 10 caracteres
+2025-08-30 01:47:56 | WARNING | app.routers.payment_term | Error en fila 21: El campo 'Fila 21 - code' no puede exceder 10 caracteres
+2025-08-30 01:47:56 | WARNING | app.routers.payment_term | Error en fila 22: El campo 'Fila 22 - code' no puede exceder 10 caracteres
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.code 
+FROM payment_terms 
+WHERE payment_terms.code IN ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::VARCHAR, $15::VARCHAR, $16::VARCHAR, $17::VARCHAR, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::VARCHAR, $22::VARCHAR, $23::VARCHAR, $24::VARCHAR, $25::VARCHAR)
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | [generated in 0.00740s] ('CASH01', 'CASH02', 'CASH03', 'CREDIT30', 'CREDIT60', 'CREDIT90', 'NET15', 'NET30', 'NET45', 'NET60', 'ADVANCE', 'MONTHLY', 'QUARTERLY', 'ANNUAL', 'CHECK', 'CREDITCARD', 'DEBITCARD', 'PAYPAL', 'CRYPTO', 'COD', 'DEPOSIT', 'RETENTION', 'DISCOUNT', 'BONUS', 'COMMISSION')
+2025-08-30 01:47:56 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 01:47:56 | ERROR | app.routers.payment_term | Error inesperado en importación masiva
+Traceback (most recent call last):
+  File "E:\Desarrollo\IA\Projects\4_Ventas\backend\app\routers\payment_term.py", line 361, in import_payment_terms
+    async with db.begin():
+               ~~~~~~~~^^
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 1890, in start
+    await greenlet_spawn(
+    ...<3 lines>...
+    )
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 190, in greenlet_spawn
+    result = context.switch(*args, **kwargs)
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1943, in begin
+    raise sa_exc.InvalidRequestError(
+        "A transaction is already begun on this Session."
+    )
+sqlalchemy.exc.InvalidRequestError: A transaction is already begun on this Session.
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | [cached since 623.5s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:55:42 | WARNING | app.routers.payment_term | Error en fila 12: El campo 'Fila 12 - code' no puede exceder 10 caracteres
+2025-08-30 01:55:42 | WARNING | app.routers.payment_term | Error en fila 16: El campo 'Fila 16 - code' no puede exceder 10 caracteres
+2025-08-30 01:55:42 | WARNING | app.routers.payment_term | Error en fila 21: El campo 'Fila 21 - code' no puede exceder 10 caracteres
+2025-08-30 01:55:42 | WARNING | app.routers.payment_term | Error en fila 22: El campo 'Fila 22 - code' no puede exceder 10 caracteres
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.code 
+FROM payment_terms 
+WHERE payment_terms.code IN ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::VARCHAR, $15::VARCHAR, $16::VARCHAR, $17::VARCHAR, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::VARCHAR, $22::VARCHAR, $23::VARCHAR, $24::VARCHAR, $25::VARCHAR)
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | [cached since 465.9s ago] ('CASH01', 'CASH02', 'CASH03', 'CREDIT30', 'CREDIT60', 'CREDIT90', 'NET15', 'NET30', 'NET45', 'NET60', 'ADVANCE', 'MONTHLY', 'QUARTERLY', 'ANNUAL', 'CHECK', 'CREDITCARD', 'DEBITCARD', 'PAYPAL', 'CRYPTO', 'COD', 'DEPOSIT', 'RETENTION', 'DISCOUNT', 'BONUS', 'COMMISSION')
+2025-08-30 01:55:42 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 01:55:42 | ERROR | app.routers.payment_term | Error inesperado en importación masiva
+Traceback (most recent call last):
+  File "E:\Desarrollo\IA\Projects\4_Ventas\backend\app\routers\payment_term.py", line 361, in import_payment_terms
+    f"Errores: {len(error_rows)}. Archivo: {file.filename}"
+    ^^^^^
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\base.py", line 121, in __aenter__
+    return await self.start(is_ctxmanager=True)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\ext\asyncio\session.py", line 1890, in start
+    await greenlet_spawn(
+    ...<3 lines>...
+    )
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\util\_concurrency_py3k.py", line 190, in greenlet_spawn
+    result = context.switch(*args, **kwargs)
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\sqlalchemy\orm\session.py", line 1943, in begin
+    raise sa_exc.InvalidRequestError(
+        "A transaction is already begun on this Session."
+    )
+sqlalchemy.exc.InvalidRequestError: A transaction is already begun on this Session.
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [generated in 0.00268s] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.code 
+FROM payment_terms 
+WHERE payment_terms.code IN ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::VARCHAR, $15::VARCHAR, $16::VARCHAR, $17::VARCHAR, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::VARCHAR, $22::VARCHAR, $23::VARCHAR, $24::VARCHAR, $25::VARCHAR)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [generated in 0.00209s] ('CASH01', 'CASH02', 'CASH03', 'CREDIT30', 'CREDIT60', 'CREDIT90', 'NET15', 'NET30', 'NET45', 'NET60', 'ADVANCE', 'MONTHLY', 'QUARTERLY', 'ANNUAL', 'CHECK', 'CREDITCARD', 'DEBITCARD', 'PAYPAL', 'CRYPTO', 'COD', 'DEPOSIT', 'RETENTION', 'DISCOUNT', 'BONUS', 'COMMISSION')
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | INSERT INTO payment_terms (id, code, name, description, active, user_id, created_at, updated_at) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::UUID, $7::TIMESTAMP WITHOUT TIME ZONE, $8::TIMESTAMP WITHOUT TIME ZONE), ($9::U ... 3544 characters truncated ... AR, $197::BOOLEAN, $198::UUID, $199::TIMESTAMP WITHOUT TIME ZONE, $200::TIMESTAMP WITHOUT TIME ZONE)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [generated in 0.00099s (insertmanyvalues) 1/1 (unordered)] (UUID('ce522f89-f276-43ff-ba4b-0c83186c7d09'), 'CASH01', 'CASH 01', 'Pago de contado opción 1', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516719), None, UUID('20f58282-1f86-4234-891e-84dae948aa0f'), 'CASH02', 'CASH 02', 'Pago de contado opción 2', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516739), None, UUID('92619de7-e457-4742-aa0e-0cf8d3c52763'), 'CASH03', 'CASH 03', 'Pago de contado opción 3', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516749), None, UUID('a355e95d-4a70-4b5f-a00b-5cc4f4a61b3e'), 'CREDIT30', 'CREDIT 30 DAYS', 'Credito a 30 días', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516757), None, UUID('c27204fa-4d87-4e7d-9e11-3ff45fba5a45'), 'CREDIT60', 'CREDIT 60 DAYS', 'Credito a 60 días', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516770), None, UUID('13e370a8-6044-40df-8efe-9a628567ab38'), 'CREDIT90', 'CREDIT 90 DAYS', 'Credito a 90 días', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516842), None, UUID('b9c8b3a9-097e-42cc-9a2e-a98a334814aa'), 'NET15' ... 100 parameters truncated ... datetime.datetime(2025, 8, 30, 6, 56, 7, 516967), None, UUID('2512f3ff-81c8-4223-95c9-952c327895cb'), 'COD', 'CASH ON DELIVERY', 'Pago contra entrega', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516976), None, UUID('2753c192-2423-42da-a693-93ede43fc6a1'), 'DEPOSIT', 'DEPOSIT PAYMENT', 'Pago por depósito', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516985), None, UUID('e9d58610-ab6b-4f73-a7d3-5dae5001b41f'), 'RETENTION', 'RETENTION PAYMENT', 'Pago con retención', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 516994), None, UUID('e1096652-1e77-46cb-9fd8-9cd621ded531'), 'DISCOUNT', 'DISCOUNT PAYMENT', 'Pago con descuento', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 517003), None, UUID('a5f036af-9cec-4241-8cc1-6dfbfaf21174'), 'BONUS', 'BONUS PAYMENT', 'Pago con bono', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 517012), None, UUID('d5bd0169-adce-47a7-9d9d-fcf01c90d89f'), 'COMMISSION', 'COMMISSION PAYMENT', 'Pago por comisión', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 6, 56, 7, 517022), None)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [generated in 0.00179s] ('audit_level',)
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | [generated in 0.00079s] (UUID('2975cd2c-466b-405f-bcd9-bced35b1d0d2'), 'IMPORT', 'PaymentTerm', None, 'Importación masiva: 25 términos de pago importados. Errores: 4. Archivo: payment_terms.csv', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 01:56:07 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 01:56:07 | INFO | app.routers.payment_term | Importación exitosa. Correctas: 25, Errores: 4, Archivo: payment_terms.csv
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | [cached since 154.8s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | [generated in 0.00077s] ()
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | [generated in 0.00483s] (5, 0)
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | [cached since 154.7s ago] ('audit_level',)
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | [cached since 154.7s ago] (UUID('3737b5bc-9020-4c9e-a3b0-58d0563f9272'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=5", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 01:58:42 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | [cached since 261s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | [cached since 106.2s ago] ()
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | [cached since 106.2s ago] (5, 0)
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | [cached since 260.9s ago] ('audit_level',)
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | [cached since 260.9s ago] (UUID('75c248d0-3c89-4f65-8aad-c64e6eb7df6f'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=5", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:00:28 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | [cached since 282.8s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.code 
+FROM payment_terms 
+WHERE payment_terms.code IN ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::VARCHAR, $15::VARCHAR, $16::VARCHAR, $17::VARCHAR, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::VARCHAR, $22::VARCHAR, $23::VARCHAR, $24::VARCHAR, $25::VARCHAR)
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | [cached since 282.8s ago] ('CASH01', 'CASH02', 'CASH03', 'CREDIT30', 'CREDIT60', 'CREDIT90', 'NET15', 'NET30', 'NET45', 'NET60', 'ADVANCE', 'MONTHLY', 'QUARTERLY', 'ANNUAL', 'CHECK', 'CREDITCARD', 'DEBITCARD', 'PAYPAL', 'CRYPTO', 'COD', 'DEPOSIT', 'RETENTION', 'DISCOUNT', 'BONUS', 'COMMISSION')
+2025-08-30 02:00:50 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 02:00:50 | WARNING | app.routers.payment_term | Error de validación en importación: Los siguientes códigos ya existen en la base de datos: ADVANCE, ANNUAL, BONUS, CASH01, CASH02, CASH03, CHECK, COD, COMMISSION, CREDIT30, CREDIT60, CREDIT90, CREDITCARD, CRYPTO, DEBITCARD, DEPOSIT, DISCOUNT, MONTHLY, NET15, NET30, NET45, NET60, PAYPAL, QUARTERLY, RETENTION
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | [cached since 650.7s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.code 
+FROM payment_terms 
+WHERE payment_terms.code IN ($1::VARCHAR, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::VARCHAR, $6::VARCHAR, $7::VARCHAR, $8::VARCHAR, $9::VARCHAR, $10::VARCHAR, $11::VARCHAR, $12::VARCHAR, $13::VARCHAR, $14::VARCHAR, $15::VARCHAR, $16::VARCHAR, $17::VARCHAR, $18::VARCHAR, $19::VARCHAR, $20::VARCHAR, $21::VARCHAR, $22::VARCHAR, $23::VARCHAR, $24::VARCHAR, $25::VARCHAR)
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | [cached since 650.7s ago] ('CASH01', 'CASH02', 'CASH03', 'CREDIT30', 'CREDIT60', 'CREDIT90', 'NET15', 'NET30', 'NET45', 'NET60', 'ADVANCE', 'MONTHLY', 'QUARTERLY', 'ANNUAL', 'CHECK', 'CREDITCARD', 'DEBITCARD', 'PAYPAL', 'CRYPTO', 'COD', 'DEPOSIT', 'RETENTION', 'DISCOUNT', 'BONUS', 'COMMISSION')
+2025-08-30 02:06:58 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 02:06:58 | WARNING | app.routers.payment_term | Error de validación en importación: Los siguientes códigos ya existen en la base de datos: ADVANCE, ANNUAL, BONUS, CASH01, CASH02, CASH03, CHECK, COD, COMMISSION, CREDIT30, CREDIT60, CREDIT90, CREDITCARD, CRYPTO, DEBITCARD, DEPOSIT, DISCOUNT, MONTHLY, NET15, NET30, NET45, NET60, PAYPAL, QUARTERLY, RETENTION
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-30 02:56:22 | INFO | sqlalchemy.engine.Engine | [generated in 0.00719s] ('system@example.com',)
+2025-08-30 02:56:22 | WARNING | passlib.handlers.bcrypt | (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-08-30 02:56:23 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 02:56:33 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:56:33 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-30 02:56:33 | INFO | sqlalchemy.engine.Engine | [cached since 10.72s ago] ('system@example.com',)
+2025-08-30 02:56:34 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [generated in 0.00365s] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [generated in 0.00267s] ()
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [generated in 0.00300s] (10, 0)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [generated in 0.00317s] ('audit_level',)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [generated in 0.00155s] (UUID('069ee833-07d9-4494-a49e-11e66ce544d8'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [cached since 0.085s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [cached since 0.07475s ago] ()
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [cached since 0.0647s ago] (10, 0)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [cached since 0.06666s ago] ('audit_level',)
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | [cached since 0.05667s ago] (UUID('27ce003d-0b24-4aa4-a281-a161285bb540'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:56:43 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 26.43s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 26.42s ago] ()
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 26.46s ago] (10, 0)
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 26.46s ago] ('audit_level',)
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 26.45s ago] (UUID('c4505fc6-3a76-4dd9-9b44-eb531788595d'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:57:09 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.02s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.01s ago] ()
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49s ago] (10, 0)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49s ago] ('audit_level',)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 48.99s ago] (UUID('739b335d-a323-4f1e-8449-8508d2ece134'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.07s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.06s ago] ()
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.05s ago] (10, 0)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.05s ago] ('audit_level',)
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | [cached since 49.04s ago] (UUID('215f31fd-ce98-4257-b613-c4550f9bf445'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:57:32 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.12s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.16s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.16s ago] ()
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.15s ago] (10, 0)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.14s ago] ('audit_level',)
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | [cached since 78.13s ago] (UUID('45797d94-e8bc-4dd3-86fb-0ad5af0a7414'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:58:01 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | [cached since 83.57s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | [cached since 83.57s ago] ()
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | [cached since 83.56s ago] (10, 10)
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | [cached since 83.56s ago] ('audit_level',)
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | [cached since 83.55s ago] (UUID('5d8c110f-a275-41fa-9e3c-24744fca37a1'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=10, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:58:06 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | [cached since 84.99s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | [cached since 84.99s ago] ()
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | [cached since 84.98s ago] (10, 20)
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | [cached since 84.99s ago] ('audit_level',)
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | [cached since 84.99s ago] (UUID('8f0cec21-6dc0-4ef0-914c-18a903dbeacb'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=20, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:58:08 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | [cached since 86.78s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | [cached since 86.78s ago] ()
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | [cached since 86.77s ago] (10, 30)
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | [cached since 86.77s ago] ('audit_level',)
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | [cached since 86.76s ago] (UUID('d7df795e-5f58-4ee5-931f-1d8392af2ba2'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=30, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:58:09 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | [cached since 89.07s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | [cached since 89.07s ago] ()
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | [cached since 89.07s ago] (10, 40)
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | [cached since 89.07s ago] ('audit_level',)
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | [cached since 89.06s ago] (UUID('416e7a28-2869-411a-9a67-31b8b147a7e6'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=40, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 02:58:12 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | [cached since 221.8s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | [cached since 221.8s ago] ()
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | [cached since 221.8s ago] (10, 40)
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | [cached since 221.8s ago] ('audit_level',)
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | [cached since 221.8s ago] (UUID('efef3c6c-9b09-48dd-af74-0be1ffbeb2e7'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=40, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:00:24 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [cached since 816.9s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.code = $1::VARCHAR
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [generated in 0.00475s] ('C23',)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.name = $1::VARCHAR
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [generated in 0.00309s] ('Código 23',)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | INSERT INTO payment_terms (id, code, name, description, active, user_id, created_at, updated_at) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::VARCHAR, $5::BOOLEAN, $6::UUID, $7::TIMESTAMP WITHOUT TIME ZONE, $8::TIMESTAMP WITHOUT TIME ZONE)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [generated in 0.00547s] (UUID('40828904-6262-4446-a441-c054c2168d86'), 'C23', 'Código 23', 'Desc', True, UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'), datetime.datetime(2025, 8, 30, 8, 10, 19, 970757), None)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [cached since 816.9s ago] ('audit_level',)
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | [cached since 816.9s ago] (UUID('3d1d09db-5c39-4910-b535-e975ebb42c11'), 'CREATE', 'PaymentTerm', UUID('40828904-6262-4446-a441-c054c2168d86'), 'Término de pago creado: Código 23 (id=40828904-6262-4446-a441-c054c2168d86, code=C23, description=Desc, active=True)', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:10:19 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [generated in 0.00823s] (UUID('40828904-6262-4446-a441-c054c2168d86'),)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [cached since 817s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [cached since 817s ago] ()
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [cached since 817s ago] (10, 40)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [cached since 817s ago] ('audit_level',)
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | [cached since 817s ago] (UUID('2ece8336-b5ef-446b-846e-10fd34b64db3'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=40, limit=10", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:10:20 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | [cached since 824s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | [cached since 824s ago] ()
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | [cached since 824s ago] (50, 0)
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | [cached since 824s ago] ('audit_level',)
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | [cached since 824s ago] (UUID('7652a962-142e-45e0-bc9c-e2f01d6a5e6f'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:10:27 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | [cached since 843.6s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | [cached since 843.6s ago] ()
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | [cached since 843.6s ago] (50, 0)
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | [cached since 843.6s ago] ('audit_level',)
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | [cached since 843.6s ago] (UUID('54b106ed-d34b-42ed-ad90-7a9c77422790'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:10:46 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | [cached since 1016s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | [cached since 1016s ago] ()
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | [cached since 1016s ago] (50, 0)
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | [cached since 1016s ago] ('audit_level',)
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | [cached since 1016s ago] (UUID('802e698f-54a1-4639-bda4-4bf2623a557f'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:13:38 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id AS payment_terms_id, payment_terms.code AS payment_terms_code, payment_terms.name AS payment_terms_name, payment_terms.description AS payment_terms_description, payment_terms.active AS payment_terms_active, payment_terms.user_id AS payment_terms_user_id, payment_terms.created_at AS payment_terms_created_at, payment_terms.updated_at AS payment_terms_updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [generated in 0.00235s] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.code = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [generated in 0.00203s] ('TRAVERSAL', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.name = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [generated in 0.00277s] ('GGGG', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | UPDATE payment_terms SET name=$1::VARCHAR, updated_at=$2::TIMESTAMP WITHOUT TIME ZONE WHERE payment_terms.id = $3::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [generated in 0.00241s] ('GGGG', datetime.datetime(2025, 8, 30, 8, 14, 10, 932362), UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] ('audit_level',)
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] (UUID('862c3ddb-a946-4a9a-b0a7-a1d7c4e47a58'), 'UPDATE', 'PaymentTerm', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'), 'Término de pago actualizado: code: TRAVERSAL → TRAVERSAL, name: ../../etc/passwd → GGGG, description: Descripción → Descripción, active: True → True', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | [cached since 231s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:10 | INFO | app.routers.payment_term | Término de pago actualizado exitosamente: 18c87f87-ec83-4829-b089-bf677c2ce675
+2025-08-30 03:14:10 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] ()
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] (50, 0)
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] ('audit_level',)
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | [cached since 1048s ago] (UUID('099e7f20-051b-4869-867e-e33513e17c14'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:11 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id AS payment_terms_id, payment_terms.code AS payment_terms_code, payment_terms.name AS payment_terms_name, payment_terms.description AS payment_terms_description, payment_terms.active AS payment_terms_active, payment_terms.user_id AS payment_terms_user_id, payment_terms.created_at AS payment_terms_created_at, payment_terms.updated_at AS payment_terms_updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 12.4s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.code = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 12.4s ago] ('TRAVERSAL', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.name = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 12.4s ago] ('GGGG', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | UPDATE payment_terms SET active=$1::BOOLEAN, updated_at=$2::TIMESTAMP WITHOUT TIME ZONE WHERE payment_terms.id = $3::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [generated in 0.00172s] (False, datetime.datetime(2025, 8, 30, 8, 14, 23, 331974), UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] ('audit_level',)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] (UUID('0bde98b3-e364-4db3-ac7f-8ad2b58f37b4'), 'UPDATE', 'PaymentTerm', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'), 'Término de pago actualizado: code: TRAVERSAL → TRAVERSAL, name: GGGG → GGGG, description: Descripción → Descripción, active: True → False', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 243.4s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:23 | INFO | app.routers.payment_term | Término de pago actualizado exitosamente: 18c87f87-ec83-4829-b089-bf677c2ce675
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] ()
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] (50, 0)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] ('audit_level',)
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | [cached since 1060s ago] (UUID('7d18d7d3-45f3-4118-bc8d-0347b36c36e0'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:23 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1076s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id AS payment_terms_id, payment_terms.code AS payment_terms_code, payment_terms.name AS payment_terms_name, payment_terms.description AS payment_terms_description, payment_terms.active AS payment_terms_active, payment_terms.user_id AS payment_terms_user_id, payment_terms.created_at AS payment_terms_created_at, payment_terms.updated_at AS payment_terms_updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 28.65s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.code = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 28.65s ago] ('TRAVERSAL', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.name = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 28.65s ago] ('GGGG', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | UPDATE payment_terms SET active=$1::BOOLEAN, updated_at=$2::TIMESTAMP WITHOUT TIME ZONE WHERE payment_terms.id = $3::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 16.25s ago] (True, datetime.datetime(2025, 8, 30, 8, 14, 39, 580137), UUID('18c87f87-ec83-4829-b089-bf677c2ce675'))
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1076s ago] ('audit_level',)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1076s ago] (UUID('3fd36a5b-ba54-499e-8174-e755625374ca'), 'UPDATE', 'PaymentTerm', UUID('18c87f87-ec83-4829-b089-bf677c2ce675'), 'Término de pago actualizado: code: TRAVERSAL → TRAVERSAL, name: GGGG → GGGG, description: Descripción → Descripción, active: False → True', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 259.6s ago] (UUID('18c87f87-ec83-4829-b089-bf677c2ce675'),)
+2025-08-30 03:14:39 | INFO | app.routers.payment_term | Término de pago actualizado exitosamente: 18c87f87-ec83-4829-b089-bf677c2ce675
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1077s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1077s ago] ()
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1077s ago] (50, 0)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1077s ago] ('audit_level',)
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | [cached since 1077s ago] (UUID('8779af5e-0417-415f-8fe8-d03b00349017'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:39 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id AS payment_terms_id, payment_terms.code AS payment_terms_code, payment_terms.name AS payment_terms_name, payment_terms.description AS payment_terms_description, payment_terms.active AS payment_terms_active, payment_terms.user_id AS payment_terms_user_id, payment_terms.created_at AS payment_terms_created_at, payment_terms.updated_at AS payment_terms_updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 47.3s ago] (UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'),)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.code = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 47.3s ago] ('C10', UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'))
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.name = $1::VARCHAR AND payment_terms.id != $2::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 47.3s ago] ('namepruebas', UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'))
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | UPDATE payment_terms SET active=$1::BOOLEAN, updated_at=$2::TIMESTAMP WITHOUT TIME ZONE WHERE payment_terms.id = $3::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 34.9s ago] (True, datetime.datetime(2025, 8, 30, 8, 14, 58, 231304), UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'))
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] ('audit_level',)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] (UUID('1185a501-ab3d-46e1-af8e-75bb6b69a3a6'), 'UPDATE', 'PaymentTerm', UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'), 'Término de pago actualizado: code: C10 → C10, name: namepruebas → namepruebas, description: c11 → c11, active: False → True', UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 278.3s ago] (UUID('a44bfe12-50a9-4af7-a107-018b140bd8bf'),)
+2025-08-30 03:14:58 | INFO | app.routers.payment_term | Término de pago actualizado exitosamente: a44bfe12-50a9-4af7-a107-018b140bd8bf
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] ()
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] (50, 0)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] ('audit_level',)
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | [cached since 1095s ago] (UUID('8dd8fa50-ccc7-4aca-a89a-d3df9dd08768'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:14:58 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id AS payment_terms_id, payment_terms.code AS payment_terms_code, payment_terms.name AS payment_terms_name, payment_terms.description AS payment_terms_description, payment_terms.active AS payment_terms_active, payment_terms.user_id AS payment_terms_user_id, payment_terms.created_at AS payment_terms_created_at, payment_terms.updated_at AS payment_terms_updated_at 
+FROM payment_terms 
+WHERE payment_terms.id = $1::UUID
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | [cached since 102s ago] (UUID('a5f036af-9cec-4241-8cc1-6dfbfaf21174'),)
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-30 03:15:52 | ERROR | app.crud.payment_term | Error en actualización de término de pago - Rollback realizado: {'payment_term_id': 'a5f036af-9cec-4241-8cc1-6dfbfaf21174', 'update_data': {'code': 'BONUS', 'name': 'SELECT CASA FROM', 'description': 'Pago con bono', 'active': True}, 'user_id': '9ce157a6-53b9-4bb3-9144-0b1fe359c9d3', 'error': "400: El campo 'Nombre' contiene patrones sospechosos de SQL injection", 'error_type': 'ValidationError'}
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.role_id, users.user_id, users.created_at, users.updated_at 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-30 03:15:52 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] (UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'),)
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM payment_terms
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] ()
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | SELECT payment_terms.id, payment_terms.code, payment_terms.name, payment_terms.description, payment_terms.active, payment_terms.user_id, payment_terms.created_at, payment_terms.updated_at 
+FROM payment_terms ORDER BY payment_terms.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] (50, 0)
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] ('audit_level',)
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | [cached since 1150s ago] (UUID('bdedcfa8-f4b5-4ef0-baf8-c80fafd86fda'), 'GETALL', 'PaymentTerm', None, "Consulta de términos de pago - filtros: search='None', active=None, skip=0, limit=50", UUID('9ce157a6-53b9-4bb3-9144-0b1fe359c9d3'))
+2025-08-30 03:15:53 | INFO | sqlalchemy.engine.Engine | COMMIT

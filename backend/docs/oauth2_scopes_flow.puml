@@ -1,0 +1,135 @@
+@startuml OAuth2_Scopes_Flow_Diagram
+!theme plain
+title Flujo de Validación de Scopes OAuth2
+
+== Configuración Inicial de Clientes ==
+
+rectangle "Base de Datos OAuth2 Clients" as DB {
+  card "frontend_web_client" as WebClient {
+    client_id: "frontend_web_v1_abc123"
+    client_secret: "hashed_secret"
+    allowed_scopes: [
+      "read", "write", 
+      "read:products", "write:products",
+      "read:purchases", "write:purchases",
+      "read:users"
+    ]
+    active: true
+  }
+  
+  card "mobile_app_client" as MobileClient {
+    client_id: "mobile_pos_v1_def456"
+    client_secret: "hashed_secret"
+    allowed_scopes: [
+      "read", 
+      "read:products",
+      "pos:sales", "write:sales"
+    ]
+    active: true
+  }
+  
+  card "reports_api_client" as ReportsClient {
+    client_id: "reports_ext_v1_ghi789"
+    client_secret: "hashed_secret"
+    allowed_scopes: [
+      "read",
+      "read:reports", 
+      "advanced:reports",
+      "export:reports"
+    ]
+    active: true
+  }
+}
+
+== Proceso de Autenticación y Asignación de Scopes ==
+
+actor "Usuario" as User
+participant "Cliente (Frontend/Mobile/API)" as Client
+participant "OAuth2 Server" as Server
+participant "Endpoint Protegido" as Endpoint
+database "Database" as DB2
+
+User -> Client: Ingresa credenciales
+Client -> Server: POST /auth/token\n+ client credentials\n+ user credentials\n+ requested scopes
+
+Server -> DB2: Validar client_id y client_secret
+DB2 -> Server: Cliente encontrado con allowed_scopes
+
+Server -> Server: Intersectar requested_scopes\ncon allowed_scopes del cliente
+note right: Solo se aprueban scopes que:\n1. Cliente tiene permitidos\n2. Usuario solicitó\n3. Existen en el sistema
+
+Server -> DB2: Validar credenciales de usuario
+DB2 -> Server: Usuario válido
+
+Server -> Server: Generar JWT con scopes finales
+note right: Token contiene:\n- user_id\n- scopes aprobados\n- timestamp expiración
+
+Server -> Client: Retorna token con scopes
+
+== Uso del Token en Requests ==
+
+Client -> Endpoint: Request con Authorization header
+note right: Authorization: Bearer <jwt_token>
+
+Endpoint -> Endpoint: Extraer y decodificar token
+Endpoint -> Endpoint: Verificar @require_scope("specific_scope")
+
+alt Scope requerido presente en token
+    Endpoint -> Endpoint: Ejecutar lógica del endpoint
+    Endpoint -> Client: Respuesta exitosa (200/201/etc)
+else Scope faltante
+    Endpoint -> Client: Error 403 Forbidden\n"Scope requerido: specific_scope"
+end
+
+== Ejemplos de Flujos por Tipo de Cliente ==
+
+group Frontend Web - Operación Completa
+  User -> Client: Crear nuevo producto
+  Client -> Endpoint: POST /products/\n@require_scope("write:products")
+  note right: Token contiene:\n["read", "write", "read:products", "write:products"]
+  Endpoint -> Endpoint: ✅ "write:products" presente
+  Endpoint -> Client: Producto creado (201)
+end
+
+group Mobile App - Operación Limitada
+  User -> Client: Intentar crear producto
+  Client -> Endpoint: POST /products/\n@require_scope("write:products")
+  note right: Token contiene:\n["read", "read:products", "pos:sales"]
+  Endpoint -> Endpoint: ❌ "write:products" ausente
+  Endpoint -> Client: Error 403 Forbidden
+end
+
+group Mobile App - Operación Permitida
+  User -> Client: Consultar productos
+  Client -> Endpoint: GET /products/\n@require_scope("read:products")
+  note right: Token contiene:\n["read", "read:products", "pos:sales"]
+  Endpoint -> Endpoint: ✅ "read:products" presente
+  Endpoint -> Client: Lista de productos (200)
+end
+
+group API Externa - Generar Reporte
+  User -> Client: Solicitar reporte de ventas
+  Client -> Endpoint: GET /reports/sales\n@require_scope("read:reports")
+  note right: Token contiene:\n["read", "read:reports", "export:reports"]
+  Endpoint -> Endpoint: ✅ "read:reports" presente
+  Endpoint -> Client: Reporte generado (200)
+end
+
+== Matriz de Permisos por Cliente ==
+
+note as PermissionMatrix
+**Matriz de Scopes por Cliente:**
+
+| Endpoint | Scope Requerido | Web Client | Mobile | Reports API |
+|----------|----------------|------------|---------|-------------|
+| GET /products/ | read:products | ✅ | ✅ | ❌ |
+| POST /products/ | write:products | ✅ | ❌ | ❌ |
+| GET /sales/ | read:sales | ✅ | ✅ | ❌ |
+| POST /sales/ | write:sales | ✅ | ✅ | ❌ |
+| GET /reports/ | read:reports | ❌ | ❌ | ✅ |
+| POST /users/ | admin | ✅* | ❌ | ❌ |
+
+*Solo si el usuario es superuser
+end note
+
+@enduml

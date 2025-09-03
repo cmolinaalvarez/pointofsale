@@ -1,0 +1,21 @@
+﻿name,symbol,description,active,user_id
+Unidad,un,Unidad individual,True,1
+Kilogramo,kg,Masa,True,1
+Gramo,g,Masa menor,True,1
+Litro,l,Volumen,True,1
+Mililitro,ml,Volumen pequeño,True,1
+Metro,m,Longitud,True,1
+Centímetro,cm,Longitud menor,True,1
+Milímetro,mm,Longitud muy pequeña,True,1
+Caja,cj,Empaque de varias unidades,True,1
+Paquete,pqt,Empaque,True,1
+Docena,dz,Paquete de 12 unidades,True,1
+Galón,gal,Volumen,True,1
+Saco,saco,Empaque grande,True,1
+Botella,bot,Recipiente,True,1
+Bolsa,bolsa,Recipiente,True,1
+Tarro,tarro,Recipiente (generalmente cilíndrico),True,1
+Paca,paca,Empaque grande,True,1
+Lata,lata,Recipiente metálico,True,1
+Par,par,Dos unidades (par),True,1
+Blíster,blíster,Empaque plástico pequeño,True,1

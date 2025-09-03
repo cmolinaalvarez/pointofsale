@@ -1,0 +1,22 @@
+Nivel,Área,Habilidad,Completado
+Básico,Lenguajes,Sintaxis básica de Python o JavaScript,☐
+Básico,Algoritmos,"Condicionales, bucles, funciones, estructuras básicas",☐
+Básico,Git,"Uso básico de Git: init, add, commit, clone, push",☐
+Básico,Web Básico,"HTML, CSS, JavaScript DOM",☐
+Básico,Terminal,"Navegar carpetas, ejecutar scripts",☐
+Básico,Bases de datos,Operaciones CRUD básicas en SQL,☐
+Intermedio,Lenguajes,"Dominio sólido de un lenguaje (Python, JS, Java...)",☐
+Intermedio,Algoritmos,"Estructuras: pilas, colas, árboles, ordenamientos",☐
+Intermedio,APIs,Crear y consumir APIs REST con frameworks modernos,☐
+Intermedio,Frontend,"React.js: componentes, estado, props",☐
+Intermedio,Git,"Ramas, merges, pull requests en Git",☐
+Intermedio,Testing,Pruebas unitarias con Pytest o Jest,☐
+Intermedio,Bases de datos,"ORMs y relaciones SQL: SQLAlchemy, Mongoose",☐
+Avanzado,Algoritmos,"Grafos, programación dinámica, optimización",☐
+Avanzado,Arquitectura,"Clean Architecture, DDD, patrones de diseño",☐
+Avanzado,Backend,"JWT/OAuth2, middlewares, manejo de errores",☐
+Avanzado,Frontend,Optimización avanzada en React/Vue,☐
+Avanzado,DevOps,"Docker, despliegue en AWS/GCP, CI/CD",☐
+Avanzado,Seguridad,"XSS, CSRF, SQLi, HTTPS, CORS",☐
+Avanzado,Testing,"Cobertura, integración, TDD",☐
+Avanzado,Microservicios,"Microservicios, colas de mensajes, API Gateway",☐

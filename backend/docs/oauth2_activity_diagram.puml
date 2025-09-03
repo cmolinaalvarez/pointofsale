@@ -1,0 +1,183 @@
+@startuml OAuth2_Process_Activity_Diagram
+!theme plain
+title Proceso OAuth2 con Diferentes Tipos de Clientes
+
+|Cliente Frontend Web|
+start
+:Usuario ingresa credenciales\nen formulario de login;
+:Frontend envía solicitud\nde token OAuth2;
+note right
+  POST /auth/token
+  grant_type=password
+  username=user@test.com
+  password=123456
+  client_id=frontend_web_client
+  client_secret=web_secret_123
+  scope=read write read:products write:products
+end note
+
+|Backend OAuth2 Server|
+:Validar credenciales del cliente\n(client_id + client_secret);
+if (¿Cliente válido?) then (no)
+  :Retornar error 401\n"Credenciales del cliente inválidas";
+  stop
+endif
+
+:Validar credenciales del usuario\n(username + password);
+if (¿Usuario válido?) then (no)
+  :Retornar error 401\n"Credenciales de usuario inválidas";
+  stop
+endif
+
+:Validar scopes solicitados\ncontra scopes permitidos del cliente;
+:Asignar scopes apropiados\nsegún tipo de usuario;
+note right
+  Si es superuser → agregar "admin"
+  Filtrar scopes no permitidos
+  Scope mínimo → "read"
+end note
+
+:Generar token JWT\ncon scopes asignados;
+note right
+  Token contiene:
+  - sub: user_id
+  - scopes: ["read", "write", "read:products", "write:products"]
+  - exp: timestamp
+end note
+
+:Retornar token al cliente;
+
+|Cliente Frontend Web|
+:Almacenar token en localStorage\no memoria;
+:Incluir token en headers\nde requests subsecuentes;
+note right
+  Authorization: Bearer <token>
+end note
+
+|Cliente Mobile App (Solo Lectura)|
+start
+:App móvil solicita token\ncon scopes limitados;
+note right
+  POST /auth/token
+  client_id=mobile_app_client
+  client_secret=mobile_secret_456
+  scope=read read:products read:sales
+end note
+
+|Backend OAuth2 Server|
+:Validar cliente móvil;
+:Verificar scopes permitidos\npara este cliente;
+note right
+  mobile_app_client solo puede:
+  - read
+  - read:products
+  - read:sales
+  - pos:sales
+end note
+
+if (¿Scopes solicitados permitidos?) then (no)
+  :Filtrar scopes no permitidos;
+endif
+
+:Generar token con scopes\nlimitados para móvil;
+:Retornar token limitado;
+
+|Cliente Mobile App (Solo Lectura)|
+:Usar token para consultas\nde productos y ventas;
+
+|Cliente API Externa (Solo Reportes)|
+start
+:Sistema externo solicita\ntoken para reportes;
+note right
+  POST /auth/token
+  client_id=reports_api_client
+  client_secret=reports_secret_789
+  scope=read read:reports export:reports
+end note
+
+|Backend OAuth2 Server|
+:Validar cliente de reportes;
+:Asignar solo scopes de lectura\ny reportes;
+
+|Cliente API Externa (Solo Reportes)|
+:Acceder solo a endpoints\nde reportes y consultas;
+
+== Uso de Tokens con Diferentes Scopes ==
+
+|Frontend Web (Token Completo)|
+:Intentar crear producto;
+note right
+  POST /products/
+  @require_scope("write:products")
+end note
+
+|Backend Endpoint|
+:Extraer token del header;
+:Decodificar scopes del token;
+:Verificar scope requerido\n"write:products";
+if (¿Token tiene "write:products" o "admin"?) then (sí)
+  :Permitir operación;
+  :Crear producto;
+else (no)
+  :Retornar error 403\n"Scope requerido: write:products";
+  stop
+endif
+
+|Mobile App (Token Limitado)|
+:Intentar crear producto;
+
+|Backend Endpoint|
+:Verificar scopes del token móvil;
+note right
+  Token móvil solo tiene:
+  ["read", "read:products", "read:sales"]
+end note
+
+if (¿Token tiene "write:products"?) then (no)
+  :Retornar error 403\n"Acceso denegado";
+  stop
+endif
+
+|Mobile App (Token Limitado)|
+:Consultar lista de productos;
+note right
+  GET /products/
+  @require_scope("read:products")
+end note
+
+|Backend Endpoint|
+:Verificar scope "read:products";
+if (¿Token tiene "read:products"?) then (sí)
+  :Permitir consulta;
+  :Retornar lista de productos;
+endif
+
+== Diferentes Tipos de Clientes ==
+
+note as ClientTypes
+**Tipos de Clientes OAuth2 Configurados:**
+
+🖥️ **Frontend Web Complete**
+- Scopes: read, write, read:products, write:products, 
+         read:purchases, write:purchases, read:users
+- Uso: Aplicación web completa de administración
+
+📱 **Mobile App (Point of Sale)**
+- Scopes: read, read:products, pos:sales, write:sales
+- Uso: App móvil para punto de venta
+
+🔌 **API Externa (Solo Lectura)**
+- Scopes: read, read:products, read:sales, read:inventory
+- Uso: Integraciones externas sin modificación
+
+📊 **Sistema de Reportes**
+- Scopes: read, read:reports, advanced:reports, export:reports
+- Uso: Generación de reportes y análisis
+
+👤 **Cliente Personal (Usuario Final)**
+- Scopes: read, read:products, read:sales
+- Uso: Consultas personales limitadas
+end note
+
+stop
+@enduml

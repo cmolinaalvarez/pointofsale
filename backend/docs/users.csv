@@ -1,0 +1,21 @@
+﻿username,email,full_name,password,active,superuser
+user1,user1@example.com,User 1,123456,true,true
+user2,user2@example.com,User 2,123456,true,true
+user3,user3@example.com,User 3,123456,true,false
+user4,user4@example.com,User 4,123456,true,false
+user5,user5@example.com,User 5,123456,true,false
+user6,user6@example.com,User 6,123456,true,false
+user7,user7@example.com,User 7,123456,true,false
+user8,user8@example.com,User 8,123456,true,false
+user9,user9@example.com,User 9,123456,true,false
+user10,user10@example.com,User 10,123456,true,false
+user11,user11@example.com,User 11,123456,true,false
+user12,user12@example.com,User 12,123456,true,false
+user13,user13@example.com,User 13,123456,true,false
+user14,user14@example.com,User 14,123456,true,false
+user15,user15@example.com,User 15,123456,true,false
+user16,user16@example.com,User 16,123456,true,false
+user17,user17@example.com,User 17,123456,true,false
+user18,user18@example.com,User 18,123456,true,false
+user19,user19@example.com,User 19,123456,true,false
+user20,user20@example.com,User 20,123456,true,false

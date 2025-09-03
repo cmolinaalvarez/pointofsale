@@ -1,0 +1,193 @@
+﻿name,code,active,country_code
+Afghanistan,AF,True,004
+Albania,AL,True,008
+Algeria,DZ,True,012
+Andorra,AD,True,020
+Angola,AO,True,024
+Argentina,AR,True,032
+Armenia,AM,True,051
+Australia,AU,True,036
+Austria,AT,True,040
+Azerbaijan,AZ,True,031
+Bahamas,BS,True,044
+Bahrain,BH,True,048
+Bangladesh,BD,True,050
+Barbados,BB,True,052
+Belarus,BY,True,112
+Belgium,BE,True,056
+Belize,BZ,True,084
+Benin,BJ,True,204
+Bhutan,BT,True,064
+Bolivia,BO,True,068
+Bosnia and Herzegovina,BA,True,070
+Botswana,BW,True,072
+Brazil,BR,True,076
+Brunei Darussalam,BN,True,096
+Bulgaria,BG,True,100
+Burkina Faso,BF,True,854
+Burundi,BI,True,108
+Cabo Verde,CV,True,132
+Cambodia,KH,True,116
+Cameroon,CM,True,120
+Canada,CA,True,124
+Central African Republic,CF,True,140
+Chad,TD,True,148
+Chile,CL,True,152
+China,CN,True,156
+Colombia,CO,True,170
+Comoros,KM,True,174
+Congo,CG,True,178
+Costa Rica,CR,True,188
+Croatia,HR,True,191
+Cuba,CU,True,192
+Cyprus,CY,True,196
+Czech Republic,CZ,True,203
+Denmark,DK,True,208
+Djibouti,DJ,True,262
+Dominica,DM,True,212
+Dominican Republic,DO,True,214
+Ecuador,EC,True,218
+Egypt,EG,True,818
+El Salvador,SV,True,222
+Equatorial Guinea,GQ,True,226
+Eritrea,ER,True,232
+Estonia,EE,True,233
+Eswatini,SZ,True,748
+Ethiopia,ET,True,231
+Fiji,FJ,True,242
+Finland,FI,True,246
+France,FR,True,250
+Gabon,GA,True,266
+Gambia,GM,True,270
+Georgia,GE,True,268
+Germany,DE,True,276
+Ghana,GH,True,288
+Greece,GR,True,300
+Grenada,GD,True,308
+Guatemala,GT,True,320
+Guinea,GN,True,324
+Guinea-Bissau,GW,True,624
+Guyana,GY,True,328
+Haiti,HT,True,332
+Honduras,HN,True,340
+Hungary,HU,True,348
+Iceland,IS,True,352
+India,IN,True,356
+Indonesia,ID,True,360
+Iran,IR,True,364
+Iraq,IQ,True,368
+Ireland,IE,True,372
+Israel,IL,True,376
+Italy,IT,True,380
+Jamaica,JM,True,388
+Japan,JP,True,392
+Jordan,JO,True,400
+Kazakhstan,KZ,True,398
+Kenya,KE,True,404
+Kiribati,KI,True,296
+Kuwait,KW,True,414
+Kyrgyzstan,KG,True,417
+Laos,LA,True,418
+Latvia,LV,True,428
+Lebanon,LB,True,422
+Lesotho,LS,True,426
+Liberia,LR,True,430
+Libya,LY,True,434
+Liechtenstein,LI,True,438
+Lithuania,LT,True,440
+Luxembourg,LU,True,442
+Madagascar,MG,True,450
+Malawi,MW,True,454
+Malaysia,MY,True,458
+Maldives,MV,True,462
+Mali,ML,True,466
+Malta,MT,True,470
+Marshall Islands,MH,True,584
+Mauritania,MR,True,478
+Mauritius,MU,True,480
+Mexico,MX,True,484
+Micronesia,FM,True,583
+Moldova,MD,True,498
+Monaco,MC,True,492
+Mongolia,MN,True,496
+Montenegro,ME,True,499
+Morocco,MA,True,504
+Mozambique,MZ,True,508
+Myanmar,MM,True,104
+Namibia,NA,True,516
+Nauru,NR,True,520
+Nepal,NP,True,524
+Netherlands,NL,True,528
+New Zealand,NZ,True,554
+Nicaragua,NI,True,558
+Niger,NE,True,562
+Nigeria,NG,True,566
+North Macedonia,MK,True,807
+Norway,NO,True,578
+Oman,OM,True,512
+Pakistan,PK,True,586
+Palau,PW,True,585
+Palestine,PS,True,275
+Panama,PA,True,591
+Papua New Guinea,PG,True,598
+Paraguay,PY,True,600
+Peru,PE,True,604
+Philippines,PH,True,608
+Poland,PL,True,616
+Portugal,PT,True,620
+Qatar,QA,True,634
+Romania,RO,True,642
+Russia,RU,True,643
+Rwanda,RW,True,646
+Saint Kitts and Nevis,KN,True,659
+Saint Lucia,LC,True,662
+Saint Vincent and the Grenadines,VC,True,670
+Samoa,WS,True,882
+San Marino,SM,True,674
+Sao Tome and Principe,ST,True,678
+Saudi Arabia,SA,True,682
+Senegal,SN,True,686
+Serbia,RS,True,688
+Seychelles,SC,True,690
+Sierra Leone,SL,True,694
+Singapore,SG,True,702
+Slovakia,SK,True,703
+Slovenia,SI,True,705
+Solomon Islands,SB,True,090
+Somalia,SO,True,706
+South Africa,ZA,True,710
+South Korea,KR,True,410
+South Sudan,SS,True,728
+Spain,ES,True,724
+Sri Lanka,LK,True,144
+Sudan,SD,True,729
+Suriname,SR,True,740
+Sweden,SE,True,752
+Switzerland,CH,True,756
+Syria,SY,True,760
+Taiwan,TW,True,158
+Tajikistan,TJ,True,762
+Tanzania,TZ,True,834
+Thailand,TH,True,764
+Timor-Leste,TL,True,626
+Togo,TG,True,768
+Tonga,TO,True,776
+Trinidad and Tobago,TT,True,780
+Tunisia,TN,True,788
+Turkey,TR,True,792
+Turkmenistan,TM,True,795
+Tuvalu,TV,True,798
+Uganda,UG,True,800
+Ukraine,UA,True,804
+United Arab Emirates,AE,True,784
+United Kingdom,GB,True,826
+United States,US,True,840
+Uruguay,UY,True,858
+Uzbekistan,UZ,True,860
+Vanuatu,VU,True,548
+Vatican City,VA,True,336
+Venezuela,VE,True,862
+Vietnam,VN,True,704
+Yemen,YE,True,887
+Zambia,ZM,True,894
+Zimbabwe,ZW,True,716

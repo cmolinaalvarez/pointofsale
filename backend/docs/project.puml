@@ -1,0 +1,50 @@
+@startmindmap pedidos
+* Sistema de Pedidos FastAPI
+** Autenticación (JWT)
+*** Registro de usuario
+*** Login
+*** Logout (Blacklist)
+*** Protección de endpoints
+** Gestión de Usuarios
+*** Crear usuario
+*** Consultar perfil (/me)
+** Gestión de Productos
+*** Listar productos
+*** Crear producto
+*** Editar producto
+*** Eliminar producto
+** Gestión de Proveedores
+*** Listar proveedores
+*** Crear proveedor
+*** Editar proveedor
+*** Eliminar proveedor
+** Gestión de Pedidos
+*** Crear pedido
+*** Listar pedidos
+*** Consultar pedido por ID
+*** Modificar pedido
+*** Eliminar pedido
+*** Gestión de ítems de pedido
+**** Agregar ítem
+**** Editar ítem
+**** Eliminar ítem
+** Base de Datos (SQLAlchemy)
+*** Tablas
+**** Usuarios
+**** Productos
+**** Proveedores
+**** Pedidos
+**** OrderItems
+** Seguridad
+*** Dependencias en endpoints
+*** Validación de tokens
+*** Revocación de tokens (Blacklist)
+** Pruebas (Postman)
+*** Registro y login
+*** Rutas protegidas
+*** Logout y verificación de acceso
+** Futuras mejoras
+*** Envío de notificaciones
+*** Reportes y estadísticas
+*** Integración con frontend (React, etc)
+@endmindmap

@@ -1,0 +1,1204 @@
+Por favor validar si cumplo con todas las validaciones de datos y de ciberseguridad en en Backen para el modelo payment_term
+
+1. Acá el modelo.
+ 
+# app/models/payment_term.py
+# =============================================================================
+# MODELO: PaymentTerm (Condiciones de Pago)
+# -----------------------------------------------------------------------------
+# Este modelo representa una "condición de pago" reutilizable que puede asociarse
+# a compras/ventas para determinar fecha de vencimiento (due_date) y ventana de
+# pronto pago (discount_until).
+# =============================================================================
+
+import enum
+import uuid
+from datetime import datetime, timedelta
+from decimal import Decimal
+from typing import Optional
+
+# SQLAlchemy imports
+from sqlalchemy import Enum as SAEnum, String, Integer, Numeric, DateTime, Boolean, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PG_UUID
+from sqlalchemy.orm import Mapped, mapped_column
+
+# Base de datos
+from app.db.base import Base  # Declarative Base (tu base ORM asíncrona)
+
+
+class PaymentBasisEnum(enum.Enum):
+    """
+    Enumeración para las bases de cálculo de fechas de pago.
+    
+    Define los dos métodos posibles para calcular fechas de vencimiento:
+    
+    Attributes:
+        INVOICE_DATE: Base de cálculo desde la fecha del documento (factura)
+        END_OF_MONTH: Base de cálculo desde el fin de mes del documento
+    """
+    INVOICE_DATE = "Factura"    # Base: fecha de la factura (ej: fecha factura + 30 días)
+    END_OF_MONTH = "Fin de més" # Base: fin de mes del documento (ej: fin de mes + 30 días)
+
+
+class PaymentTerm(Base):
+    """
+    Modelo que representa una condición de pago en el sistema.
+    
+    Una condición de pago define los términos y plazos para el pago de facturas,
+    incluyendo descuentos por pronto pago y la base para calcular fechas de vencimiento.
+    """
+    
+    # -------------------------------------------------------------------------
+    # CONFIGURACIÓN DE LA TABLA
+    # -------------------------------------------------------------------------
+    __tablename__ = "payment_terms"  # Nombre físico de la tabla en la base de datos
+
+    # -------------------------------------------------------------------------
+    # IDENTIFICACIÓN PRINCIPAL
+    # -------------------------------------------------------------------------
+    
+    id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),          # Tipo PostgreSQL UUID, manejado como objeto UUID en Python
+        primary_key=True,               # Esta columna es la llave primaria de la tabla
+        default=uuid.uuid4,             # Genera automáticamente UUID v4 al crear un nuevo registro
+        comment="Identificador único universal (UUIDv4) como llave primaria. "
+                "Ventajas: evita colisiones entre nodos/servicios, útil en microservicios."
+    )
+    
+    code: Mapped[str] = mapped_column(
+        String(50),                     # Tipo string con longitud máxima de 50 caracteres
+        unique=True,                    # Garantiza que no existan dos registros con el mismo código
+        index=True,                     # Crea índice para búsquedas rápidas por este campo
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        comment="Código único para identificación rápida (ej. NET30, CASH). "
+                "Indexado para optimización de consultas. "
+                "String(50) es suficiente para códigos cortos (ajústalo si tu negocio requiere más)."
+    )
+    
+    name: Mapped[str] = mapped_column(
+        String(255),                    # Tipo string con longitud máxima de 255 caracteres
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        unique=True,                    # Garantiza que no existan dos registros con el mismo nombre
+        comment="Nombre descriptivo de la condición de pago. Debe ser único en el sistema. "
+                "Ejemplos: 'Contado', 'Crédito 30 días', '2/10 Net 30'."
+    )
+    
+    description: Mapped[str] = mapped_column(
+        String(255),                    # Tipo string con longitud máxima de 255 caracteres
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        comment="Descripción detallada de los términos de pago para contexto del usuario. "
+                "String(255) es típico; aumenta si esperas descripciones más largas. "
+                "Ejemplo: '2% de descuento si paga dentro de 10 días, neto 30 días'."
+    )
+
+    # -------------------------------------------------------------------------
+    # TÉRMINOS DE PAGO Y DESCUENTOS
+    # -------------------------------------------------------------------------
+    
+    net_days: Mapped[int] = mapped_column(
+        Integer,                        # Tipo entero para almacenar días
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        default=0,                      # Valor por defecto: 0 días (contado)
+        comment="Número de días para el vencimiento del pago desde la fecha base. "
+                "0 = contado inmediato. "
+                "Ejemplo: 30 días para NET30, 60 días para NET60."
+    )
+
+    discount_percent: Mapped[Decimal] = mapped_column(
+        Numeric(5, 2),                  # Tipo numérico con precisión: 5 dígitos totales, 2 decimales
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        default=0,                      # Valor por defecto: 0% de descuento
+        comment="Porcentaje de descuento por pronto pago (0-100). Precisión decimal de 2 dígitos. "
+                "Numeric(5,2) permite valores de -999.99 a 999.99. "
+                "En la práctica, se espera 0..100. Si quieres reforzar esa regla, "
+                "puedes añadir una CHECK CONSTRAINT a nivel de tabla."
+    )
+
+    discount_days: Mapped[int] = mapped_column(
+        Integer,                        # Tipo entero para almacenar días
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        default=0,                      # Valor por defecto: 0 días (sin descuento)
+        comment="Ventana de días para aplicar el descuento desde la fecha base. "
+                "0 = sin descuento. "
+                "Ejemplo: 10 días para 2/10/NET30 (descuento del 2% si se paga en 10 días)."
+    )
+    
+    basis: Mapped[PaymentBasisEnum] = mapped_column(
+        SAEnum(
+            PaymentBasisEnum,           # Enum de SQLAlchemy basado en PaymentBasisEnum
+            name="payment_basis_enum",  # Nombre del tipo ENUM en PostgreSQL
+            native_enum=True,           # Usa el tipo ENUM nativo de PostgreSQL
+            validate_strings=True       # Valida que los strings coincidan con los valores del enum
+        ),
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        default=PaymentBasisEnum.INVOICE_DATE,  # Valor por defecto: fecha de factura
+        comment="Base de cálculo para fechas: 'Factura' (fecha documento) o 'Fin de més' (fin de mes documento). "
+                "Con esto podrás calcular due_date y discount_until en tu lógica de negocio. "
+                "Ejemplo: 'Factura' = desde fecha factura, 'Fin de més' = desde fin de mes."
+    )
+
+    # -------------------------------------------------------------------------
+    # METADATOS Y AUDITORÍA
+    # -------------------------------------------------------------------------
+    
+    active: Mapped[bool] = mapped_column(
+        Boolean,                        # Tipo booleano (TRUE/FALSE)
+        default=True,                   # Valor por defecto: True (activo)
+        comment="Indica si el término de pago está activo (true) o inactivo (false). "
+                "Útil para soft-delete o deshabilitar términos sin eliminarlos físicamente."
+    )
+    
+    user_id: Mapped[uuid.UUID] = mapped_column(
+        PG_UUID(as_uuid=True),          # Tipo PostgreSQL UUID, manejado como objeto UUID en Python
+        ForeignKey("users.id"),         # Llave foránea que referencia la tabla users, columna id
+        nullable=False,                 # El campo no puede ser NULL en la base de datos
+        comment="Llave foránea que referencia al usuario que creó este término de pago. "
+                "Garantiza trazabilidad de quién creó cada condición de pago."
+    )
+
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime,                       # Tipo datetime para almacenar fecha y hora
+        default=datetime.utcnow,        # Valor por defecto: fecha/hora actual en UTC
+        comment="Marca de tiempo de creación del registro (UTC). "
+                "Se establece automáticamente al crear. "
+                "Usa datetime.utcnow() (naive). Si tu aplicación es TZ-aware, "
+                "considera usar timestamps con zona o normalizar siempre a UTC."
+    )
+    
+    updated_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime,                       # Tipo datetime para almacenar fecha y hora
+        onupdate=datetime.utcnow,       # Se actualiza automáticamente al modificar el registro
+        nullable=True,                  # Puede ser NULL para registros nunca actualizados
+        comment="Marca de tiempo de última actualización (UTC). "
+                "Se actualiza automáticamente al modificar el registro. "
+                "Nullable para registros que nunca han sido actualizados."
+    )
+    
+    # -------------------------------------------------------------------------
+    # MÉTODOS DE UTILIDAD (SIN DEPENDENCIAS EXTERNAS)
+    # -------------------------------------------------------------------------
+    
+    def __repr__(self) -> str:
+        """
+        Representación formal del objeto para debugging y logging.
+        
+        Returns:
+            str: Representación string del objeto PaymentTerm
+        """
+        return f"<PaymentTerm(id={self.id}, code='{self.code}', name='{self.name}')>"
+    
+    def calculate_due_date(self, invoice_date: datetime) -> datetime:
+        """
+        Calcula la fecha de vencimiento basada en la fecha de factura y los términos.
+        
+        Esta implementación no requiere dependencias externas y usa solo
+        la biblioteca estándar de Python.
+        
+        Args:
+            invoice_date: Fecha de la factura/documento
+            
+        Returns:
+            datetime: Fecha de vencimiento calculada según net_days y basis
+        """
+        if self.basis == PaymentBasisEnum.INVOICE_DATE:
+            # Cálculo directo desde fecha de factura: simplemente sumar los días netos
+            return invoice_date + timedelta(days=self.net_days)
+        else:
+            # Cálculo desde fin de mes (EOM - End of Month)
+            # Estrategia: encontrar el primer día del mes siguiente y restar 1 día
+            # para obtener el último día del mes actual
+            if invoice_date.month == 12:
+                # Caso especial: diciembre -> el siguiente mes es enero del año siguiente
+                next_month = invoice_date.replace(
+                    year=invoice_date.year + 1,  # Incrementar el año
+                    month=1,                     # Primer mes (enero)
+                    day=1                        # Primer día del mes
+                )
+            else:
+                # Mes normal: simplemente incrementar el mes
+                next_month = invoice_date.replace(
+                    month=invoice_date.month + 1,  # Mes siguiente
+                    day=1                          # Primer día del mes
+                )
+            
+            # El último día del mes actual es el día anterior al primer día del mes siguiente
+            end_of_month = next_month - timedelta(days=1)
+            
+            # Sumar los días netos al fin de mes
+            return end_of_month + timedelta(days=self.net_days)
+    
+    def calculate_discount_deadline(self, invoice_date: datetime) -> Optional[datetime]:
+        """
+        Calcula la fecha límite para aplicar el descuento por pronto pago.
+        
+        Args:
+            invoice_date: Fecha de la factura/documento
+            
+        Returns:
+            datetime: Fecha límite para el descuento, o None si no aplica descuento
+        """
+        # Si no hay descuento configurado, retornar None
+        if self.discount_days == 0 or self.discount_percent == 0:
+            return None
+            
+        # Lógica similar a calculate_due_date pero para discount_days
+        if self.basis == PaymentBasisEnum.INVOICE_DATE:
+            # Cálculo desde fecha de factura
+            return invoice_date + timedelta(days=self.discount_days)
+        else:
+            # Cálculo desde fin de mes
+            if invoice_date.month == 12:
+                next_month = invoice_date.replace(
+                    year=invoice_date.year + 1,
+                    month=1,
+                    day=1
+                )
+            else:
+                next_month = invoice_date.replace(
+                    month=invoice_date.month + 1,
+                    day=1
+                )
+            
+            end_of_month = next_month - timedelta(days=1)
+            return end_of_month + timedelta(days=self.discount_days)
+
+    def is_discount_applicable(self, invoice_date: datetime, payment_date: datetime) -> bool:
+        """
+        Verifica si un descuento por pronto pago es aplicable.
+        
+        Args:
+            invoice_date: Fecha de la factura/documento
+            payment_date: Fecha de pago propuesta
+            
+        Returns:
+            bool: True si el descuento aplica, False en caso contrario
+        """
+        discount_deadline = self.calculate_discount_deadline(invoice_date)
+        return discount_deadline is not None and payment_date <= discount_deadline
+
+# =============================================================================
+# NOTAS ADICIONALES:
+# -----------------------------------------------------------------------------
+# 1. Las restricciones CHECK para validar discount_percent (0-100) y net_days (≥0)
+#    pueden añadirse a nivel de base de datos para mayor robustez.
+# 2. Considerar añadir índices adicionales si se filtran frecuentemente por
+#    user_id o active.
+# 3. Para aplicaciones distribuidas, considerar usar timezone-aware timestamps
+#    en lugar de datetime.utcnow().
+# 4. Los métodos calculate_due_date y calculate_discount_deadline usan solo
+#    la biblioteca estándar de Python, sin dependencias externas.
+# =============================================================================
+
+2. Acá el schema
+
+from pydantic import BaseModel
+from uuid import UUID
+from typing import Optional, List, Dict
+from datetime import datetime
+
+class PaymentTermBase(BaseModel):
+    code: str
+    name: str
+    description: Optional[str] = None  
+    net_days: int 
+    discount_percent: float
+    discount_days: int   
+    basis: str 
+    active: bool
+
+class PaymentTermCreate(PaymentTermBase):
+    pass
+
+class PaymentTermUpdate(PaymentTermBase):
+    pass
+
+class PaymentTermPatch(BaseModel):
+    code: Optional[str] = None  
+    name: Optional[str] = None  
+    description: Optional[str] = None      
+    net_days: Optional[int] = None  
+    discount_percent: Optional[float] = None  
+    discount_days: Optional[int] = None    
+    basis: Optional[str] = None  
+    active: Optional[bool] = None
+
+class PaymentTermRead(PaymentTermBase):
+    id: UUID
+    user_id: UUID
+    updated_at: Optional[datetime] = None
+
+    class Config:
+        from_attributes = True
+
+class PaymentTermListResponse(BaseModel):
+    total: int
+    items: List[PaymentTermRead]
+
+    class Config:
+        from_attributes = True
+        
+class PaymentTermImportResult(BaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list
+	
+3. Acá el router
+
+from fastapi import APIRouter, Depends, HTTPException, status, UploadFile, File, Query
+from sqlalchemy.ext.asyncio import AsyncSession
+from uuid import UUID
+from typing import Optional, List
+import csv
+from io import StringIO
+
+from app.dependencies.current_user import get_current_user
+from app.core.security import get_async_db
+from app.models.user import User
+from app.crud.payment_term import (
+    create_payment_term, 
+    get_payment_terms, 
+    get_payment_term_by_id, 
+    update_payment_term, 
+    delete_payment_term
+)
+from app.schemas.payment_term import (
+    PaymentTermCreate, 
+    PaymentTermUpdate, 
+    PaymentTermRead, 
+    PaymentTermListResponse,
+    PaymentTermImportResult
+)
+from app.validators.payment_terms.create import validate_payment_term_create
+from app.validators.payment_terms.read import validate_pagination_parameters, validate_search_parameter, validate_payment_term_id
+from app.validators.payment_terms.update import validate_payment_term_update
+from app.validators.payment_terms.import_csv import validate_csv_file, validate_csv_headers, validate_csv_row
+from app.validators.base import ValidationError
+
+router = APIRouter(prefix="/paymentterms", tags=["PaymentTerms"])
+
+@router.post("/", response_model=PaymentTermRead, status_code=status.HTTP_201_CREATED)
+async def create_payment_term_endpoint(
+    payment_term_in: PaymentTermCreate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Crear un nuevo término de pago
+    """
+    try:
+        # Validar datos
+        payment_term_data = payment_term_in.model_dump()
+        validated_data = await validate_payment_term_create(db, payment_term_data)
+        
+        # Crear en base de datos
+        new_payment_term, log = await create_payment_term(db, validated_data, current_user.id)
+        
+        if log:
+            db.add(log)
+        
+        await db.commit()
+        await db.refresh(new_payment_term)
+        
+        return PaymentTermRead.model_validate(new_payment_term)
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Error de integridad de datos (código o nombre ya existe)"
+        )
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.get("/", response_model=PaymentTermListResponse)
+async def list_payment_terms(
+    skip: int = Query(0, ge=0, description="Número de registros a saltar"),
+    limit: int = Query(100, ge=1, le=1000, description="Límite de registros por página"),
+    search: Optional[str] = Query(None, min_length=2, max_length=100, description="Término de búsqueda"),
+    active: Optional[bool] = Query(None, description="Filtrar por estado activo/inactivo"),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Listar términos de pago con paginación y filtros
+    """
+    try:
+        # Validar parámetros
+        validate_pagination_parameters(skip, limit)
+        validated_search = validate_search_parameter(search)
+        
+        # Obtener datos
+        result = await get_payment_terms(
+            db=db,
+            skip=skip,
+            limit=limit,
+            search=validated_search,
+            active=active,
+            user_id=current_user.id
+        )
+        
+        await db.commit()
+        return result
+
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.get("/{payment_term_id}", response_model=PaymentTermRead)
+async def read_payment_term(
+    payment_term_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Obtener un término de pago por ID
+    """
+    try:
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Obtener datos
+        payment_term = await get_payment_term_by_id(db, payment_term_id, current_user.id)
+        
+        if not payment_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        await db.commit()
+        return PaymentTermRead.model_validate(payment_term)
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.put("/{payment_term_id}", response_model=PaymentTermRead)
+async def update_payment_term_endpoint(
+    payment_term_id: UUID,
+    payment_term_in: PaymentTermUpdate,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Actualizar un término de pago completo
+    """
+    try:
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Validar datos
+        update_data = payment_term_in.model_dump()
+        validated_data = await validate_payment_term_update(db, payment_term_id, update_data)
+        
+        # Actualizar en base de datos
+        updated_term, log = await update_payment_term(db, payment_term_id, validated_data, current_user.id)
+        
+        if not updated_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        if log:
+            db.add(log)
+        
+        await db.commit()
+        await db.refresh(updated_term)
+        
+        return PaymentTermRead.model_validate(updated_term)
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except HTTPException:
+        raise
+        
+    except IntegrityError as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail="Error de integridad de datos"
+        )
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.delete("/{payment_term_id}", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_payment_term_endpoint(
+    payment_term_id: UUID,
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Eliminar un término de pago
+    """
+    try:
+        # Validar ID
+        validate_payment_term_id(payment_term_id)
+        
+        # Eliminar de base de datos
+        deleted_term, log = await delete_payment_term(db, payment_term_id, current_user.id)
+        
+        if not deleted_term:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Término de pago no encontrado"
+            )
+        
+        if log:
+            db.add(log)
+        
+        await db.commit()
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except HTTPException:
+        raise
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail="Error interno del servidor"
+        )
+
+@router.post("/import", response_model=PaymentTermImportResult, status_code=status.HTTP_201_CREATED)
+async def import_payment_terms(
+    file: UploadFile = File(...),
+    db: AsyncSession = Depends(get_async_db),
+    current_user: User = Depends(get_current_user),
+):
+    """
+    Importar términos de pago desde archivo CSV
+    """
+    try:
+        # Validar archivo
+        validate_csv_file(file)
+        
+        # Leer contenido
+        content = await file.read()
+        csv_content = content.decode("utf-8")
+        
+        # Procesar CSV
+        csv_reader = csv.DictReader(StringIO(csv_content))
+        
+        # Validar headers
+        validate_csv_headers(csv_reader.fieldnames)
+        
+        # Procesar filas
+        payment_terms = []
+        valid_rows = 0
+        error_rows = []
+        
+        for row_number, row in enumerate(csv_reader, 1):
+            try:
+                validated_row = validate_csv_row(row, row_number)
+                
+                payment_term = PaymentTerm(
+                    code=validated_row["code"],
+                    name=validated_row["name"],
+                    description=validated_row.get("description", ""),
+                    active=validated_row.get("active", True),
+                    user_id=current_user.id
+                )
+                
+                payment_terms.append(payment_term)
+                valid_rows += 1
+                
+            except ValidationError as ve:
+                error_rows.append(f"Fila {row_number}: {ve.detail}")
+            except Exception as e:
+                error_rows.append(f"Fila {row_number}: Error inesperado - {str(e)}")
+        
+        # Insertar en lote
+        if payment_terms:
+            db.add_all(payment_terms)
+            await db.flush()
+            
+            # Auditoría
+            from app.utils.audit_level import get_audit_level
+            from app.utils.audit import log_action
+            
+            audit_level = await get_audit_level(db)
+            if audit_level > 1:
+                await log_action(
+                    db,
+                    action="IMPORT",
+                    entity="PaymentTerm",
+                    description=f"Importación masiva: {valid_rows} términos importados desde {file.filename}",
+                    user_id=current_user.id
+                )
+        
+        await db.commit()
+        
+        return {
+            "ok": True,
+            "imported": valid_rows,
+            "errors": len(error_rows),
+            "error_details": error_rows[:10]  # Limitar detalles de error
+        }
+        
+    except ValidationError as e:
+        await db.rollback()
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail=e.detail)
+        
+    except Exception as e:
+        await db.rollback()
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Error durante la importación: {str(e)}"
+        )
+		
+4. Acá el crud
+
+from sqlalchemy.future import select
+from typing import Optional
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError, SQLAlchemyError
+from uuid import UUID
+from datetime import datetime
+import logging
+
+from app.models.payment_term import PaymentTerm
+from app.models.audit_log import AuditLog
+from app.utils.audit import log_action
+from app.utils.audit_level import get_audit_level
+
+logger = logging.getLogger(__name__)
+
+async def create_payment_term(db: AsyncSession, payment_term_data: dict, user_id: UUID):
+    """
+    Crea un nuevo término de pago (solo operación de BD, sin validaciones)
+    """
+    try:
+        payment_term = PaymentTerm(
+            code=payment_term_data['code'],
+            name=payment_term_data['name'],
+            description=payment_term_data.get('description'),
+            active=payment_term_data.get('active', True),
+            user_id=user_id
+        )
+        
+        db.add(payment_term)
+        await db.flush()
+        
+        # Auditoría
+        audit_level = await get_audit_level(db)
+        log = None
+        
+        if audit_level > 1:
+            description = f"Término de pago creado: {payment_term_data['name']} (code={payment_term_data['code']})"
+            log = await log_action(
+                db,
+                action="CREATE",
+                entity="PaymentTerm",
+                entity_id=payment_term.id,
+                description=description,
+                user_id=user_id
+            )
+        
+        return payment_term, log
+        
+    except IntegrityError as e:
+        logger.error("Error de integridad al crear payment_term: %s", e)
+        raise IntegrityError("Error de integridad en base de datos", e.orig, e.params)
+        
+    except SQLAlchemyError as e:
+        logger.error("Error de SQLAlchemy al crear payment_term: %s", e)
+        raise e
+
+async def get_payment_terms(
+    db: AsyncSession,
+    skip: int = 0,
+    limit: int = 100,
+    search: Optional[str] = None,
+    active: Optional[bool] = None,
+    user_id: Optional[UUID] = None,
+) -> dict:
+    """
+    Obtiene términos de pago con paginación y filtros
+    """
+    try:
+        # Construir query base
+        query = select(PaymentTerm)
+        
+        # Aplicar filtros
+        if search:
+            search_pattern = f"%{search}%"
+            query = query.where(
+                or_(
+                    PaymentTerm.code.ilike(search_pattern),
+                    PaymentTerm.name.ilike(search_pattern),
+                    PaymentTerm.description.ilike(search_pattern)
+                )
+            )
+        
+        if active is not None:
+            query = query.where(PaymentTerm.active == active)
+
+        # Calcular total
+        count_query = select(func.count()).select_from(PaymentTerm)
+        if search:
+            count_query = count_query.where(
+                or_(
+                    PaymentTerm.code.ilike(search_pattern),
+                    PaymentTerm.name.ilike(search_pattern),
+                    PaymentTerm.description.ilike(search_pattern)
+                )
+            )
+        if active is not None:
+            count_query = count_query.where(PaymentTerm.active == active)
+        
+        total_result = await db.execute(count_query)
+        total = total_result.scalar_one()
+
+        # Obtener resultados paginados
+        result = await db.execute(
+            query.order_by(PaymentTerm.name)
+                 .offset(skip)
+                 .limit(limit)
+        )
+        payment_terms = result.scalars().all()
+
+        # Auditoría
+        audit_level = await get_audit_level(db)
+        if audit_level > 2 and user_id:
+            await log_action(
+                db,
+                action="GETALL",
+                entity="PaymentTerm",
+                description=f"Consulta de términos de pago - filtros: search='{search}', active={active}",
+                user_id=user_id,
+            )
+
+        return {
+            "total": total, 
+            "items": payment_terms,
+            "skip": skip,
+            "limit": limit
+        }
+
+    except SQLAlchemyError as e:
+        logger.error("Error de base de datos al obtener términos: %s", e)
+        raise e
+
+async def get_payment_term_by_id(db: AsyncSession, payment_term_id: UUID, user_id: UUID = None):
+    """
+    Obtiene un término de pago por ID
+    """
+    try:
+        result = await db.execute(
+            select(PaymentTerm).where(PaymentTerm.id == payment_term_id)
+        )
+        payment_term = result.scalars().first()
+
+        if not payment_term:
+            return None
+
+        # Auditoría
+        if user_id:
+            audit_level = await get_audit_level(db)
+            if audit_level > 0:
+                await log_action(
+                    db,
+                    action="GET",
+                    entity="PaymentTerm",
+                    entity_id=payment_term.id,
+                    description=f"Consultó término de pago: {payment_term.name}",
+                    user_id=user_id,
+                )
+
+        return payment_term
+
+    except SQLAlchemyError as e:
+        logger.error("Error al obtener término por ID: %s", e)
+        raise e
+
+async def update_payment_term(db: AsyncSession, payment_term_id: UUID, update_data: dict, user_id: UUID):
+    """
+    Actualiza un término de pago existente
+    """
+    try:
+        # Obtener término existente
+        result = await db.execute(
+            select(PaymentTerm).where(PaymentTerm.id == payment_term_id)
+        )
+        payment_term = result.scalars().first()
+        
+        if not payment_term:
+            return None, None
+
+        # Guardar valores antiguos para auditoría
+        old_values = {field: getattr(payment_term, field) for field in update_data.keys()}
+
+        # Actualizar campos
+        for field, value in update_data.items():
+            if hasattr(payment_term, field):
+                setattr(payment_term, field, value)
+        
+        payment_term.updated_at = datetime.utcnow()
+        await db.flush()
+
+        # Auditoría
+        audit_level = await get_audit_level(db)
+        log = None
+        
+        if audit_level > 0:
+            changes = ", ".join([f"{k}: {old_values[k]} → {v}" for k, v in update_data.items()])
+            description = f"Término de pago actualizado: {changes}"
+            
+            log = await log_action(
+                db,
+                action="UPDATE",
+                entity="PaymentTerm",
+                entity_id=payment_term_id,
+                description=description,
+                user_id=user_id
+            )
+
+        return payment_term, log
+
+    except IntegrityError as e:
+        logger.error("Error de integridad al actualizar: %s", e)
+        raise IntegrityError("Error de integridad en base de datos", e.orig, e.params)
+        
+    except SQLAlchemyError as e:
+        logger.error("Error de SQLAlchemy al actualizar: %s", e)
+        raise e
+
+async def delete_payment_term(db: AsyncSession, payment_term_id: UUID, user_id: UUID):
+    """
+    Elimina un término de pago
+    """
+    try:
+        result = await db.execute(
+            select(PaymentTerm).where(PaymentTerm.id == payment_term_id)
+        )
+        payment_term = result.scalars().first()
+        
+        if not payment_term:
+            return None, None
+
+        # Auditoría antes de eliminar
+        audit_level = await get_audit_level(db)
+        log = None
+        
+        if audit_level > 0:
+            description = f"Término de pago eliminado: {payment_term.name} (code={payment_term.code})"
+            log = await log_action(
+                db,
+                action="DELETE",
+                entity="PaymentTerm",
+                entity_id=payment_term_id,
+                description=description,
+                user_id=user_id
+            )
+
+        await db.delete(payment_term)
+        await db.flush()
+
+        return payment_term, log
+
+    except SQLAlchemyError as e:
+        logger.error("Error al eliminar término: %s", e)
+        raise e
+		
+6. Acá el validator base.py
+
+import re 
+from fastapi import HTTPException, status
+from uuid import UUID
+import re
+import logging
+from typing import Any, Optional, Union
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+
+logger = logging.getLogger(__name__)
+
+class ValidationError(HTTPException):
+    """Excepción personalizada para errores de validación"""
+    def __init__(self, detail: str):
+        super().__init__(status_code=status.HTTP_400_BAD_REQUEST, detail=detail)
+
+# ==================== VALIDACIONES BÁSICAS ====================
+def validate_required(value: Any, field_name: str):
+    """Valida que un campo sea requerido"""
+    if value is None:
+        raise ValidationError(f"El campo '{field_name}' es requerido")
+    if isinstance(value, str) and not value.strip():
+        raise ValidationError(f"El campo '{field_name}' no puede estar vacío")
+
+def validate_max_length(value: str, max_len: int, field_name: str):
+    """Valida la longitud máxima de un campo"""
+    if value and len(value) > max_len:
+        raise ValidationError(f"El campo '{field_name}' no puede exceder {max_len} caracteres")
+
+def validate_min_length(value: str, min_len: int, field_name: str):
+    """Valida la longitud mínima de un campo"""
+    if value and len(value) < min_len:
+        raise ValidationError(f"El campo '{field_name}' debe tener al menos {min_len} caracteres")
+
+def validate_uuid(value: Any, field_name: str = "ID") -> UUID:
+    """Valida que sea un UUID válido"""
+    try:
+        return UUID(str(value))
+    except (ValueError, TypeError):
+        raise ValidationError(f"El {field_name} debe ser un UUID válido")
+
+def validate_no_sql_injection(value: str, field_name: str):
+    """Valida contra patrones de inyección SQL - VERSIÓN ESTRICTA"""
+    if not value or not isinstance(value, str):
+        return
+        
+    lower_value = value.lower()
+    
+    # Lista COMPLETA de palabras clave SQL peligrosas
+    sql_keywords = [
+        'select', 'from', 'where', 'delete', 'insert', 'update', 'drop', 
+        'truncate', 'create', 'alter', 'exec', 'execute', 'declare', 
+        'cursor', 'begin', 'end', 'transaction', 'union', 'join', 'having',
+        'group by', 'order by', 'limit', 'offset', 'procedure', 'function',
+        'trigger', 'view', 'index', 'database', 'table', 'column'
+    ]
+    
+    # Buscar palabras clave SQL
+    found_keywords = []
+    for keyword in sql_keywords:
+        # Buscar la palabra como palabra completa (no parte de otra palabra)
+        if re.search(rf'\b{keyword}\b', lower_value):
+            found_keywords.append(keyword)
+    
+    # Si encuentra palabras clave SQL, es sospechoso
+    if found_keywords:
+        raise ValidationError(
+            f"El campo '{field_name}' contiene palabras reservadas de SQL: {', '.join(found_keywords)}"
+        )
+    
+    # También verificar caracteres peligrosos
+    dangerous_chars = [";", "--", "/*", "*/", "'", "\"", "\\"]
+    for char in dangerous_chars:
+        if char in value:
+            raise ValidationError(
+                f"El campo '{field_name}' contiene caracteres peligrosos para SQL"
+            )
+
+def validate_no_xss(value: str, field_name: str):  # ← ¡FUNCIÓN NUEVA!
+    """Valida que no contenga código JavaScript peligroso (XSS)"""
+    if not value:
+        return
+        
+    xss_patterns = [
+        r"<script.*?>.*?</script>",
+        r"javascript:",
+        r"onerror=.*?[\"']",
+        r"onload=.*?[\"']",
+        r"onclick=.*?[\"']",
+        r"onmouseover=.*?[\"']",
+        r"onfocus=.*?[\"']",
+        r"eval\s*\(",
+        r"alert\s*\(",
+        r"confirm\s*\(",
+        r"prompt\s*\(",
+        r"document\.cookie",
+        r"window\.location",
+        r"document\.write",
+        r"innerHTML",
+        r"outerHTML",
+        r"expression\s*\("
+    ]
+    
+    for pattern in xss_patterns:
+        if re.search(pattern, value, re.IGNORECASE):
+            raise ValidationError(f"El campo '{field_name}' contiene código potencialmente peligroso (XSS)")
+
+def sanitize_input(value: str) -> str:
+    """Sanitiza input para prevenir ataques XSS"""
+    if not value:
+        return value
+        
+    value = value.strip()
+    dangerous_chars = {"<": "&lt;", ">": "&gt;", "\"": "&quot;", "'": "&#x27;", "&": "&amp;"}
+    
+    for dangerous, safe in dangerous_chars.items():
+        value = value.replace(dangerous, safe)
+    
+    return value
+
+# ==================== VALIDACIONES DE BASE DE DATOS ====================
+async def validate_unique_field(
+    db: AsyncSession, 
+    model, 
+    field_name: str, 
+    field_value: Any, 
+    entity_name: str,
+    exclude_id: Any = None
+):
+    """Valida que un campo sea único en la base de datos"""
+    if field_value is None:
+        return
+        
+    query = select(model).where(getattr(model, field_name) == field_value)
+    if exclude_id:
+        query = query.where(model.id != exclude_id)
+    
+    result = await db.execute(query)
+    if result.scalar_one_or_none():
+        raise ValidationError(f"Ya existe un {entity_name} con este {field_name}")
+
+async def validate_foreign_key(
+    db: AsyncSession,
+    model,
+    field_name: str,
+    field_value: Any,
+    entity_name: str,
+    field_display_name: str = None
+):
+    """Valida que una clave foránea exista en la base de datos"""
+    if field_value is None:
+        return
+        
+    result = await db.execute(select(model).where(getattr(model, "id") == field_value))
+    if not result.scalar_one_or_none():
+        display_name = field_display_name or field_name
+        raise ValidationError(f"El {display_name} especificado no existe")
+    
+def validate_code_format(code: str, field_name: str = "Código"):
+    """
+    Valida que el código tenga un formato específico para términos de pago
+    Formatos aceptados: 
+    - PT-001 (Prefijo seguido de número)
+    - PTERM2023 (Prefijo seguido de año)
+    - PAY_TERM_01 (Prefijo con underscores)
+    
+    Reglas:
+    - Debe comenzar con 2-6 letras mayúsculas
+    - Seguido de un separador (- o _) opcional
+    - Terminar con 3-8 caracteres alfanuméricos
+    - Longitud total máxima: 10 caracteres
+    """
+    if not code:
+        return
+        
+    # Patrón para validar formato de código
+    pattern = r'^[A-Z]{2,6}[-_]?[A-Z0-9]{3,8}$'
+    
+    if not re.match(pattern, code):
+        raise ValidationError(
+            f"El campo '{field_name}' debe tener el formato: "
+            "XX-XXXX o XXX_XXXX (2-6 letras mayúsculas + separador opcional + 3-8 caracteres alfanuméricos)"
+        )
+    
+    # Validación adicional de longitud máxima
+    if len(code) > 10:
+        raise ValidationError(f"El campo '{field_name}' no puede exceder 10 caracteres") # ← Nueva validación necesaria
+		
+7. Acá el validator/payment_terms/
+from ..base import ValidationError, validate_required, validate_max_length, validate_no_sql_injection, sanitize_input, validate_no_xss
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy import select
+from app.models.payment_term import PaymentTerm
+from uuid import UUID
+from typing import Dict, Any
+
+async def validate_payment_term_create(
+    db: AsyncSession, 
+    payment_term_data: Dict[str, Any], 
+    is_update: bool = False, 
+    exclude_id: UUID = None
+) -> Dict[str, Any]:
+    """
+    Valida los datos para crear o actualizar un término de pago
+    """
+    # Validar campos requeridos
+    validate_required(payment_term_data.get('code'), 'Código')
+    validate_required(payment_term_data.get('name'), 'Nombre')
+    
+    # Validar código
+    code = payment_term_data['code']
+    validate_max_length(code, 10, 'Código')
+    validate_no_sql_injection(code, 'Código')
+    
+    # Validar nombre
+    name = payment_term_data['name']
+    validate_max_length(name, 100, 'Nombre')
+    validate_no_sql_injection(name, 'Nombre')
+    
+    # Validar descripción (opcional)
+    if 'description' in payment_term_data and payment_term_data['description']:      
+        description = payment_term_data['description']
+        validate_max_length(description, 500, 'Descripción')
+        validate_no_sql_injection(description, 'Descripción')  # ← ¡AQUÍ SE DETECTARÁ!
+        validate_no_xss(description, 'Descripción')
+    
+    # Validar unicidad en base de datos
+    await validate_unique_code(db, payment_term_data['code'], exclude_id)
+    await validate_unique_name(db, payment_term_data['name'], exclude_id)
+    
+    # Sanitizar inputs
+    return {
+        'code': sanitize_input(payment_term_data['code']),
+        'name': sanitize_input(payment_term_data['name']),
+        'description': sanitize_input(payment_term_data.get('description', '')),
+        'active': payment_term_data.get('active', True)
+    }
+
+async def validate_unique_code(db: AsyncSession, code: str, exclude_id: UUID = None):
+    """Valida que el código sea único"""
+    query = select(PaymentTerm).where(PaymentTerm.code == code)
+    if exclude_id:
+        query = query.where(PaymentTerm.id != exclude_id)
+    
+    result = await db.execute(query)
+    if result.scalar():
+        raise ValidationError("Ya existe un término de pago con este código")
+
+async def validate_unique_name(db: AsyncSession, name: str, exclude_id: UUID = None):
+    """Valida que el nombre sea único"""
+    query = select(PaymentTerm).where(PaymentTerm.name == name)
+    if exclude_id:
+        query = query.where(PaymentTerm.id != exclude_id)
+    
+    result = await db.execute(query)
+    if result.scalar():
+        raise ValidationError("Ya existe un término de pago con este nombre")
+    
+
+		
+
+

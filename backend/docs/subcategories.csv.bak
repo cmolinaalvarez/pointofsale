@@ -1,0 +1,11 @@
+code;name;description;category_id
+4000001;Bebidas;Description 1;81903516-96ce-4282-b11e-93eb65245ff6
+4000002;Alimentos;Description 2;81903516-96ce-4282-b11e-93eb65245ff6
+4000003;Snacks;Description 3;81903516-96ce-4282-b11e-93eb65245ff6
+4000004;Lácteos;Description 4;81903516-96ce-4282-b11e-93eb65245ff6
+4000005;Frutas;Description 5;81903516-96ce-4282-b11e-93eb65245ff6
+4000006;Verduras;Description 6;81903516-96ce-4282-b11e-93eb65245ff6
+4000007;Carnes;Description 7;81903516-96ce-4282-b11e-93eb65245ff6
+4000008;Panadería;Description 8;81903516-96ce-4282-b11e-93eb65245ff6
+4000009;Dulces;Description 9;81903516-96ce-4282-b11e-93eb65245ff6
+4000010;Otros;Description 10;81903516-96ce-4282-b11e-93eb65245ff6

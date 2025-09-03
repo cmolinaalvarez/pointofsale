@@ -1,0 +1,76 @@
+# === Python / FastAPI (backend) ===
+/backend/__pycache__/
+/backend/**/*.py[cod]
+/backend/**/*.pyo
+/backend/**/*.pyd
+/backend/**/*.pkl
+/backend/**/*.egg-info/
+/backend/**/*.egg
+/backend/**/*.log
+/backend/**/*.sqlite3
+/backend/**/*.db
+
+# Virtual environments
+/backend/.venv/
+/backend/venv/
+/backend/ENV/
+/backend/env/
+
+# Alembic
+/backend/alembic.ini
+/backend/alembic/versions/*.pyc
+
+# Local configs
+/backend/.env
+/backend/*.env
+
+# Coverage / testing
+/backend/.coverage
+/backend/htmlcov/
+/backend/.tox/
+/backend/pytest_cache/
+/backend/.mypy_cache/
+/backend/.pytest_cache/
+
+# === Node / Next.js (frontend) ===
+/frontend/node_modules/
+/frontend/npm-debug.log*
+/frontend/yarn-debug.log*
+/frontend/yarn-error.log*
+/frontend/pnpm-debug.log*
+/frontend/package-lock.json
+/frontend/yarn.lock
+/frontend/.pnp.*
+/frontend/.pnpm-debug.log
+
+# Next.js build
+/frontend/.next/
+/frontend/out/
+/frontend/dist/
+
+# Cache
+/frontend/.cache/
+/frontend/.next/cache/
+
+# Local dev
+/frontend/.DS_Store
+/frontend/*.swp
+/frontend/.idea/
+/frontend/*.sublime-project
+/frontend/*.sublime-workspace
+
+# Logs
+/frontend/logs/
+/frontend/*.log
+
+# === Common ===
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+Thumbs.db
+.DS_Store
+*.log
+
+# === Docs ===
+/docs/

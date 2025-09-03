@@ -1,0 +1,261 @@
+@startuml OAuth2_Permission_Validation_Timeline
+!theme plain
+title Timeline de Validación de Permisos - Diferentes Escenarios
+
+== Escenario 1: Admin Web - Operación Exitosa ==
+
+participant "Admin User" as Admin
+participant "Frontend" as Frontend
+participant "OAuth2Middleware" as MW1
+participant "require_scope Decorator" as Decorator1
+participant "ProductsAPI Endpoint" as API1
+participant "Database" as DB1
+
+Admin -> Frontend: Click "Crear Producto"
+Frontend -> API1: POST /products/\nAuthorization: Bearer <admin_token>
+
+note over MW1
+**Middleware Execution:**
+1. Extract: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+2. Decode JWT: {"sub": "admin_123", "scopes": ["admin", "write:products"], "exp": 1640995200}
+3. Store: request.state.token_payload = decoded_data
+end note
+
+MW1 -> API1: Continue to endpoint
+
+note over Decorator1
+**@require_scope("write:products") Execution:**
+1. Get: token_scopes = ["admin", "write:products"]
+2. Check: "write:products" in token_scopes → TRUE
+3. Check: "admin" in token_scopes → TRUE (bypass)
+4. Result: ALLOW ✅
+end note
+
+Decorator1 -> API1: Execute function
+
+note over API1
+**Endpoint Function:**
+@router.post("/products/")
+@require_scope("write:products")
+async def create_product():
+    # Function executes because validation passed
+    new_product = await create_product(db, product_data)
+    return new_product
+end note
+
+API1 -> DB1: INSERT INTO products
+DB1 -> API1: Product created
+API1 -> Frontend: HTTP 201 Created
+Frontend -> Admin: ✅ "Producto creado exitosamente"
+
+== Escenario 2: Cajero Mobile - Operación Denegada ==
+
+participant "Cashier User" as Cashier
+participant "Mobile App" as Mobile
+participant "OAuth2Middleware" as MW2
+participant "require_scope Decorator" as Decorator2
+participant "ProductsAPI Endpoint" as API2
+
+Cashier -> Mobile: Touch "Agregar Producto"
+Mobile -> API2: POST /products/\nAuthorization: Bearer <cashier_token>
+
+note over MW2
+**Middleware Execution:**
+1. Extract: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+2. Decode JWT: {"sub": "cashier_456", "scopes": ["read", "read:products", "pos:sales"], "exp": 1640995200}
+3. Store: request.state.token_payload = decoded_data
+end note
+
+MW2 -> API2: Continue to endpoint
+
+note over Decorator2
+**@require_scope("write:products") Execution:**
+1. Get: token_scopes = ["read", "read:products", "pos:sales"]
+2. Check: "write:products" in token_scopes → FALSE ❌
+3. Check: "admin" in token_scopes → FALSE ❌
+4. Result: DENY ❌
+end note
+
+Decorator2 -> Mobile: HTTP 403 Forbidden
+note right
+{
+  "detail": "Acceso denegado. Scope requerido: write:products. 
+            Scopes disponibles: read, read:products, pos:sales"
+}
+end note
+
+Mobile -> Cashier: ❌ "No tienes permisos para esta acción"
+
+== Escenario 3: Cajero Mobile - Operación Permitida ==
+
+Cashier -> Mobile: Touch "Ver Productos"
+Mobile -> API2: GET /products/\nAuthorization: Bearer <cashier_token>
+
+note over MW2
+**Middleware Execution:**
+Same token as before:
+{"sub": "cashier_456", "scopes": ["read", "read:products", "pos:sales"], "exp": 1640995200}
+end note
+
+MW2 -> API2: Continue to endpoint
+
+note over Decorator2
+**@require_scope("read:products") Execution:**
+1. Get: token_scopes = ["read", "read:products", "pos:sales"]
+2. Check: "read:products" in token_scopes → TRUE ✅
+3. Result: ALLOW ✅
+end note
+
+Decorator2 -> API2: Execute function
+
+note over API2
+**Endpoint Function:**
+@router.get("/products/")
+@require_scope("read:products")
+async def list_products():
+    # Function executes because validation passed
+    products = await get_products(db)
+    return products
+end note
+
+API2 -> DB1: SELECT * FROM products
+DB1 -> API2: Products list
+API2 -> Mobile: HTTP 200 OK + products
+Mobile -> Cashier: ✅ Lista de productos mostrada
+
+== Escenario 4: Token Expirado ==
+
+participant "Any User" as User
+participant "Any Client" as Client
+participant "OAuth2Middleware" as MW3
+participant "JWT Decoder" as JWT
+
+User -> Client: Intenta usar app después de 1 hora
+Client -> MW3: Request con token expirado
+
+note over MW3
+**Middleware Execution:**
+1. Extract: "Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9..."
+2. Try decode JWT...
+end note
+
+MW3 -> JWT: decode_access_token(expired_token)
+
+note over JWT
+**JWT Validation:**
+1. Parse token header and payload
+2. Check signature → VALID
+3. Check expiration: exp=1640995200 vs now=1640998800
+4. Token EXPIRED ❌
+5. Return None
+end note
+
+JWT -> MW3: None (token invalid)
+
+note over MW3
+**Error Response:**
+if not payload:
+    return unauthorized_response("Token inválido o expirado")
+end note
+
+MW3 -> Client: HTTP 401 Unauthorized
+note right
+{
+  "detail": "Token inválido o expirado",
+  "headers": {"WWW-Authenticate": "Bearer"}
+}
+end note
+
+Client -> User: ❌ "Sesión expirada, inicia sesión nuevamente"
+
+== Escenario 5: Sin Token ==
+
+User -> Client: Request sin autenticación
+Client -> MW3: Request sin Authorization header
+
+note over MW3
+**Middleware Execution:**
+authorization = request.headers.get("Authorization")
+if not authorization:
+    return unauthorized_response("Token de autorización requerido")
+end note
+
+MW3 -> Client: HTTP 401 Unauthorized
+note right
+{
+  "detail": "Token de autorización requerido",
+  "headers": {"WWW-Authenticate": "Bearer"}
+}
+end note
+
+Client -> User: ❌ "Debes iniciar sesión"
+
+== Flujo de Decisiones en Código ==
+
+note as DecisionFlow
+**Flujo de Decisiones del Sistema:**
+
+```python
+# 1. MIDDLEWARE (antes de cualquier endpoint)
+async def __call__(self, request, call_next):
+    token = extract_token(request)
+    if not token:
+        return 401  # No token
+    
+    payload = decode_jwt(token)
+    if not payload:
+        return 401  # Token invalid/expired
+    
+    request.state.token_payload = payload
+    return await call_next(request)
+
+# 2. DECORADOR (en cada endpoint protegido)
+def require_scope(required_scope):
+    def decorator(func):
+        async def wrapper(*args, **kwargs):
+            token_scopes = request.state.token_payload.get('scopes', [])
+            
+            if required_scope in token_scopes or "admin" in token_scopes:
+                return await func(*args, **kwargs)  # ALLOW
+            else:
+                return 403  # DENY
+```
+
+**Estados posibles:**
+- ✅ 200/201: Scope presente → Ejecutar función
+- ❌ 401: Sin token o token inválido → Requerir login
+- ❌ 403: Token válido pero scope insuficiente → Acceso denegado
+end note
+
+== Timing de Validaciones ==
+
+note as TimingDiagram
+**Orden Temporal de Validaciones:**
+
+```
+REQUEST LIFECYCLE:
+├── 1. HTTP Request received
+├── 2. OAuth2Middleware.call() [~1ms]
+│   ├── Extract Authorization header
+│   ├── Validate JWT token
+│   ├── Store user info in request.state
+│   └── Continue or Return 401
+├── 3. FastAPI Route matching [~0.1ms]
+├── 4. @require_scope() decorator [~0.1ms]
+│   ├── Get scopes from request.state
+│   ├── Compare with required scope
+│   └── Continue or Return 403
+├── 5. Endpoint function execution [~10-100ms]
+│   ├── Business logic
+│   ├── Database operations
+│   └── Return response
+└── 6. HTTP Response sent
+```
+
+**Performance:**
+- Token validation: ~1ms (in-memory JWT decode)
+- Scope validation: ~0.1ms (list comparison)
+- No database queries for permission checking!
+end note
+
+@enduml

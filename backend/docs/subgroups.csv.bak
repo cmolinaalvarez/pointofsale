@@ -1,0 +1,11 @@
+﻿code;name;description;group_id
+uno;Bebidas;Desc 1;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+dos;Alimentos;Desc 2;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+tres;Snacks;Desc 3;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+cuatro;LÃ¡cteos;Desc 4;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+cinco;Frutas;Desc 5;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+seis;Verduras;Desc 6;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+siete;Carnes;Desc 7;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+ocho;PanaderÃ­a;Desc 8;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+nueve;Dulces;Desc 9;89a1e0b9-16d3-420c-b94f-7796dc73aaf4
+diez;Otros;Desc 10;89a1e0b9-16d3-420c-b94f-7796dc73aaf4

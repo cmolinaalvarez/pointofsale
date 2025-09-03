@@ -1,0 +1,1034 @@
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:17:37 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:17:38 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:17:38 | INFO | sqlalchemy.engine.Engine | [generated in 0.00576s] ('admin@gmail.com',)
+2025-08-21 20:17:38 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:17:38 | INFO | sqlalchemy.engine.Engine | [generated in 0.00390s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:17:38 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | [cached since 451.6s ago] ('admin@gmail.com',)
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | [cached since 451.6s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:25:09 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | [generated in 0.00177s] ('admin@gmail.com',)
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | [generated in 0.00182s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:42:46 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-21 20:53:04 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | [generated in 0.00086s] ('admin@gmail.com',)
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | [generated in 0.00291s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:53:05 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | [cached since 84.88s ago] ('admin@gmail.com',)
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | [cached since 84.87s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:54:29 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00568s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 144s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00408s] ()
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00479s] (100, 0)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00125s] ('audit_level',)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00209s] (UUID('19f41dd0-b0d5-4ab6-86e8-0884027081e5'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 0.2615s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 144.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 0.2607s ago] ()
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [generated in 0.00262s] (100, 0)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 0.117s ago] ('audit_level',)
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | [cached since 0.1082s ago] (UUID('76fedfe4-7275-4280-8647-8390012f50c3'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:29 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.714s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 147.7s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.705s ago] ()
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.443s ago] (100, 0)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.557s ago] ('audit_level',)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.548s ago] (UUID('3b6925fa-3acb-4dfa-9775-67438dd77aaf'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.771s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 147.8s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.87s ago] ()
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.611s ago] (100, 0)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.729s ago] ('audit_level',)
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | [cached since 3.721s ago] (UUID('a44f0845-e4a2-407d-80a6-0163bbd3b68e'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:32 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | [cached since 164.9s ago] ('admin@gmail.com',)
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | [cached since 164.9s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:49 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.73s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 165.7s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.72s ago] ()
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.47s ago] (100, 0)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.59s ago] ('audit_level',)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.58s ago] (UUID('3b99c461-c10e-409c-bbc1-3afeead13c07'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.84s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 165.8s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.85s ago] ()
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.59s ago] (100, 0)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.7s ago] ('audit_level',)
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | [cached since 21.7s ago] (UUID('fbb65eee-32c2-4551-b68d-532e3e9a8264'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:55:50 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.26s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 193.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.25s ago] ()
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 48.98s ago] (100, 0)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.1s ago] ('audit_level',)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.09s ago] (UUID('8060e5e3-ff62-41bc-9e42-f951af18d71b'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.31s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 193.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.3s ago] ()
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.04s ago] (100, 0)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.16s ago] ('audit_level',)
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | [cached since 49.15s ago] (UUID('09f37230-aeac-4311-8e30-44295192c48e'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:56:18 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 244.5s ago] ('admin@gmail.com',)
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | [cached since 244.5s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:09 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 245.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.4s ago] ()
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.2s ago] (100, 0)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.3s ago] ('audit_level',)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.4s ago] (UUID('b1a7efbe-97cc-42e7-87a4-03ea78f453c2'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.6s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 245.6s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.6s ago] ()
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.3s ago] (100, 0)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.5s ago] ('audit_level',)
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | [cached since 101.5s ago] (UUID('373271c3-bbae-4e3c-a3ba-30a4bb41a883'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:57:10 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | [cached since 271.4s ago] ('admin@gmail.com',)
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | [cached since 271.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:36 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.2s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 272.2s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.2s ago] ()
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128s ago] (100, 0)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.1s ago] ('audit_level',)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.1s ago] (UUID('2751b1c4-6d85-4ae1-99c5-f6c5e6a0eee5'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 272.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.4s ago] ()
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.1s ago] (100, 0)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.2s ago] ('audit_level',)
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | [cached since 128.2s ago] (UUID('b1f29d88-d2a6-464f-a764-22c0eacf3a46'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 20:57:37 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | [generated in 0.00402s] ('admin@gmail.com',)
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | [generated in 0.00117s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:06:36 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.00168s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 2.391s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.11525s] ()
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.00401s] (100, 0)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.00476s] ('audit_level',)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.00499s] (UUID('234209e1-7076-447d-b279-6dfd6ac2df3d'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 0.2823s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 2.679s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 0.2949s ago] ()
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [generated in 0.01022s] (100, 0)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 0.1542s ago] ('audit_level',)
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | [cached since 0.1535s ago] (UUID('d9bb744b-d4ec-4a17-b1b0-d19a0188156f'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:06:39 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 111.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 113.6s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 111.2s ago] ()
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 110.9s ago] (100, 0)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 111.1s ago] ('audit_level',)
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | [cached since 111.1s ago] (UUID('834a0e66-3fa7-422a-94f1-d1d93509fe74'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:08:30 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | [cached since 161.1s ago] ('admin@gmail.com',)
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | [cached since 161s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:09:17 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 159.5s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 161.9s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 159.6s ago] ()
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 159.3s ago] (100, 0)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 159.4s ago] ('audit_level',)
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | [cached since 159.4s ago] (UUID('e26728ec-0e53-4a06-83aa-0b55110e6351'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:09:18 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 208.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 210.8s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 208.4s ago] ()
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 208.1s ago] (100, 0)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 208.2s ago] ('audit_level',)
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | [cached since 208.2s ago] (UUID('62e45ff4-0149-43dc-b6ed-eba30d58c14d'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:10:07 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 874.1s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 876.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 874s ago] ()
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 873.7s ago] (100, 0)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 873.9s ago] ('audit_level',)
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | [cached since 873.9s ago] (UUID('4ad84ee1-be98-4e09-bd5f-1de050f711a1'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:21:13 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 896.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 898.8s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 896.4s ago] ()
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 896.1s ago] (100, 0)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 896.2s ago] ('audit_level',)
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | [cached since 896.2s ago] (UUID('42db8592-76a3-4719-b422-cc7ef6e817c9'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 21:21:35 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | [cached since 1525s ago] ('admin@gmail.com',)
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | [cached since 1525s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:32:01 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | [cached since 3191s ago] ('admin@gmail.com',)
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | [cached since 3191s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 21:59:48 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | [cached since 3221s ago] ('admin@gmail.com',)
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | [cached since 3221s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:00:17 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:03:48 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:03:48 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:03:48 | INFO | sqlalchemy.engine.Engine | [cached since 3432s ago] ('cmolinaalvarez@gmail.com',)
+2025-08-21 22:03:48 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | [cached since 3442s ago] ('admin@gmail.com',)
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | [cached since 3442s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:03:58 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | [cached since 3939s ago] ('admin@gmail.com',)
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | [cached since 3939s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:12:15 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | [cached since 4131s ago] ('admin@gmail.com',)
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | [cached since 4131s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:15:27 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:19:38 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:19:38 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:19:38 | INFO | sqlalchemy.engine.Engine | [cached since 4382s ago] ('cmolinaalvarez@gmail.com',)
+2025-08-21 22:19:38 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:19:43 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:19:43 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:19:43 | INFO | sqlalchemy.engine.Engine | [cached since 4387s ago] ('cmolinaalvarez@gmail.com',)
+2025-08-21 22:19:43 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | [cached since 4396s ago] ('admin@gmail.com',)
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | [cached since 4396s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:19:52 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | select pg_catalog.version()
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | select current_schema()
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | show standard_conforming_strings
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | [raw sql] ()
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | [generated in 0.00144s] ('admin@gmail.com',)
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | [generated in 0.00220s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:26:09 | WARNING | passlib.handlers.bcrypt | (trapped) error reading bcrypt version
+Traceback (most recent call last):
+  File "E:\Desarrollo\PointOfSale\backend\venv\Lib\site-packages\passlib\handlers\bcrypt.py", line 620, in _load_backend_mixin
+    version = _bcrypt.__about__.__version__
+              ^^^^^^^^^^^^^^^^^
+AttributeError: module 'bcrypt' has no attribute '__about__'
+2025-08-21 22:26:09 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | [cached since 559.1s ago] ('admin@gmail.com',)
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | [cached since 559.1s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:35:28 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | [cached since 941.9s ago] ('admin@gmail.com',)
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | [cached since 941.9s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:41:51 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:52:14 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:52:14 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:52:14 | INFO | sqlalchemy.engine.Engine | [cached since 1566s ago] ('admin@gmail.com',)
+2025-08-21 22:52:14 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:52:14 | INFO | sqlalchemy.engine.Engine | [cached since 1566s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:52:15 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | [cached since 1655s ago] ('admin@gmail.com',)
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | [cached since 1655s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:53:44 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | [cached since 1753s ago] ('admin@gmail.com',)
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | [cached since 1753s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:55:22 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 22:57:00 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 22:57:00 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 22:57:00 | INFO | sqlalchemy.engine.Engine | [cached since 1852s ago] ('admin@gmail.com',)
+2025-08-21 22:57:00 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 22:57:00 | INFO | sqlalchemy.engine.Engine | [cached since 1852s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 22:57:01 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 23:01:09 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:01:09 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 23:01:09 | INFO | sqlalchemy.engine.Engine | [cached since 2101s ago] ('admin@gmail.com',)
+2025-08-21 23:01:09 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:01:09 | INFO | sqlalchemy.engine.Engine | [cached since 2101s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:01:10 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 23:34:26 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:34:26 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.email = $1::VARCHAR
+2025-08-21 23:34:26 | INFO | sqlalchemy.engine.Engine | [cached since 4097s ago] ('admin@gmail.com',)
+2025-08-21 23:34:26 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:34:26 | INFO | sqlalchemy.engine.Engine | [cached since 4097s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:34:27 | INFO | sqlalchemy.engine.Engine | ROLLBACK
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.00633s] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 4722s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.01235s] ()
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.00635s] (100, 0)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.00187s] ('audit_level',)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.00771s] (UUID('0778ff86-756a-4618-8d8c-6ce8a4565520'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 0.2599s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 4723s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 0.2502s ago] ()
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [generated in 0.00674s] (100, 0)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 0.1588s ago] ('audit_level',)
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | [cached since 0.1465s ago] (UUID('9a3c954b-80ee-48fe-aa98-385330939e76'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:44:51 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 4835s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113s ago] ()
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 112.8s ago] (100, 0)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113s ago] ('audit_level',)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113s ago] (UUID('2011b95e-5009-472d-8067-f97da0086908'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113.2s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 4836s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113.2s ago] ()
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 112.9s ago] (100, 0)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113.1s ago] ('audit_level',)
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | [cached since 113.1s ago] (UUID('4346f3e9-a9e9-4e47-8788-8bab4f915809'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:46:44 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | [cached since 279.1s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | [cached since 5002s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | [cached since 279.3s ago] ()
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | [cached since 279s ago] (100, 0)
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:49:30 | INFO | sqlalchemy.engine.Engine | [cached since 279.2s ago] ('audit_level',)
+2025-08-21 23:49:31 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:49:31 | INFO | sqlalchemy.engine.Engine | [cached since 279.3s ago] (UUID('d69c694e-4acd-4a9e-a300-c2d71515fb58'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:49:31 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.2s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 5013s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.2s ago] ()
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 289.9s ago] (100, 0)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.1s ago] ('audit_level',)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.1s ago] (UUID('d77164ed-769f-419b-b7aa-8532e2396124'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.3s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 5013s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.3s ago] ()
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290s ago] (100, 0)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.2s ago] ('audit_level',)
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | [cached since 290.1s ago] (UUID('d496a516-ccba-4855-a8d4-f7719a096e08'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:49:41 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:50:25 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:50:25 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.4s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 5057s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.6s ago] ()
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.5s ago] (100, 0)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.7s ago] ('audit_level',)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.7s ago] (UUID('f34d682a-138b-4e4b-955d-3b85d02fdfa1'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 335s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 5057s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 335s ago] ()
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 334.8s ago] (100, 0)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 335s ago] ('audit_level',)
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | [cached since 335s ago] (UUID('17a405cb-3737-4746-97cf-58f4b0c03d47'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:50:26 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | [cached since 358.7s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | [cached since 5081s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | [cached since 359.2s ago] ()
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | [cached since 359s ago] (100, 0)
+2025-08-21 23:50:50 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.3s ago] ('audit_level',)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.3s ago] (UUID('d69fb060-6a77-4cf7-a6cf-6da679903368'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | COMMIT
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | BEGIN (implicit)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | SELECT users.id, users.username, users.email, users.full_name, users.password, users.active, users.superuser, users.created_at, users.updated_at, users.user_id 
+FROM users 
+WHERE users.id = $1::UUID
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.6s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | SELECT audit_logs.user_id AS audit_logs_user_id, audit_logs.id AS audit_logs_id, audit_logs.action AS audit_logs_action, audit_logs.entity AS audit_logs_entity, audit_logs.entity_id AS audit_logs_entity_id, audit_logs.description AS audit_logs_description, audit_logs.created_at AS audit_logs_created_at 
+FROM audit_logs 
+WHERE audit_logs.user_id IN ($1::UUID)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 5082s ago] (UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'),)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | SELECT count(*) AS count_1 
+FROM (SELECT products.id AS id, products.code AS code, products.name AS name, products.description AS description, products.product_type AS product_type, products.category_id AS category_id, products.brand_id AS brand_id, products.unit_id AS unit_id, products.user_id AS user_id, products.cost AS cost, products.price AS price, products.percent_tax AS percent_tax, products.barcode AS barcode, products.image_url AS image_url, products.negative_stock AS negative_stock, products.active AS active, products.created_at AS created_at, products.updated_at AS updated_at 
+FROM products) AS anon_1
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.7s ago] ()
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | SELECT products.id, products.code, products.name, products.description, products.product_type, products.category_id, products.brand_id, products.unit_id, products.user_id, products.cost, products.price, products.percent_tax, products.barcode, products.image_url, products.negative_stock, products.active, products.created_at, products.updated_at 
+FROM products ORDER BY products.name 
+ LIMIT $1::INTEGER OFFSET $2::INTEGER
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.5s ago] (100, 0)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | SELECT settings.value 
+FROM settings 
+WHERE settings.key = $1::VARCHAR AND settings.active = true
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.7s ago] ('audit_level',)
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | INSERT INTO audit_logs (id, action, entity, entity_id, description, user_id) VALUES ($1::UUID, $2::VARCHAR, $3::VARCHAR, $4::UUID, $5::VARCHAR, $6::UUID) RETURNING audit_logs.created_at
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | [cached since 359.8s ago] (UUID('5ed26f4c-ff82-4d2d-acda-d94c6da5cb7a'), 'GETALL', 'Product', None, "Consulta productos - search='None', active=None, skip=0, limit=100", UUID('633b2fe2-6d87-475b-864a-07a15adf2d0c'))
+2025-08-21 23:50:51 | INFO | sqlalchemy.engine.Engine | COMMIT

@@ -1,0 +1,30 @@
+code;name;description;active
+CASH01;CASH 01;Pago de contado opción 1;true
+CASH02;CASH 02;Pago de contado opción 2;true
+CASH03;CASH 03;Pago de contado opción 3;true
+CREDIT30;CREDIT 30 DAYS;Credito a 30 días;true
+CREDIT60;CREDIT 60 DAYS;Credito a 60 días;true
+CREDIT90;CREDIT 90 DAYS;Credito a 90 días;true
+NET15;NET 15 DAYS;Pago neto 15 días;true
+NET30;NET 30 DAYS;Pago neto 30 días;true
+NET45;NET 45 DAYS;Pago neto 45 días;true
+NET60;NET 60 DAYS;Pago neto 60 días;true
+ADVANCE;ADVANCE PAYMENT;Pago anticipado;true
+INSTALLMENT;INSTALLMENT PAYMENT;Pago en cuotas;true
+MONTHLY;MONTHLY PAYMENT;Pago mensual;true
+QUARTERLY;QUARTERLY PAYMENT;Pago trimestral;true
+ANNUAL;ANNUAL PAYMENT;Pago anual;true
+BANKTRANSFER;BANK TRANSFER;Transferencia bancaria;true
+CHECK;CHECK PAYMENT;Pago con cheque;true
+CREDITCARD;CREDIT CARD;Pago con tarjeta de crédito;true
+DEBITCARD;DEBIT CARD;Pago con tarjeta de débito;true
+PAYPAL;PAYPAL;Pago con PayPal;true
+WIRETRANSFER;WIRE TRANSFER;Transferencia electrónica;true
+DIGITALWALLET;DIGITAL WALLET;Billetera digital;true
+CRYPTO;CRYPTO CURRENCY;Pago con criptomoneda;true
+COD;CASH ON DELIVERY;Pago contra entrega;true
+DEPOSIT;DEPOSIT PAYMENT;Pago por depósito;true
+RETENTION;RETENTION PAYMENT;Pago con retención;true
+DISCOUNT;DISCOUNT PAYMENT;Pago con descuento;true
+BONUS;BONUS PAYMENT;Pago con bono;true
+COMMISSION;COMMISSION PAYMENT;Pago por comisión;true

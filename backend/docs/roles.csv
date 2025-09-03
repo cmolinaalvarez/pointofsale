@@ -1,0 +1,22 @@
+﻿name,description,role_type,scopes,is_admin
+Administrador,Rol de administrador del sistema,admin,"[""read"",""write"",""admin""]",True
+Supervisor,Gestiona equipos y aproba cambios,manager,"[""read"",""write""]",False
+Vendedor,Gestiona ventas y cotizaciones,sales,"[""read"",""write""]",False
+Cajero,Opera el punto de venta,pos,"[""read"",""write""]",False
+Inventario,Controla existencias y conteos,inventory,"[""read"",""write""]",False
+Compras,Registra Ã³rdenes y facturas de compra,purchases,"[""read"",""write""]",False
+Auditor,Consulta y verifica registros,auditor,"[""read""]",False
+Contador,Tareas contables y cierres,finance,"[""read"",""write""]",False
+Soporte,Atiende incidencias y tickets,support,"[""read"",""write""]",False
+Invitado,Acceso de solo lectura,guest,"[""read""]",False
+Operaciones,Gestiona procesos operativos,operations,"[""read"",""write""]",False
+Logistica,Despachos y recepciÃ³n,logistics,"[""read"",""write""]",False
+Marketing,CampaÃ±as y promociones,marketing,"[""read"",""write""]",False
+RRHH,GestiÃ³n de personal,hr,"[""read"",""write""]",False
+Almacenista,Movimientos en bodega,warehouse,"[""read"",""write""]",False
+Ecommerce,CatÃ¡logo y pedidos en lÃ­nea,ecommerce,"[""read"",""write""]",False
+Analista,Reportes y anÃ¡lisis,analyst,"[""read""]",False
+Calidad,Control de calidad,qa,"[""read"",""write""]",False
+Desarrollador,Soporte tÃ©cnico y desarrollo,developer,"[""read"",""write""]",False
+Auditor_Junior,Apoyo a auditorÃ­as,auditor_jr,"[""read""]",False
+system,Semilla,system,"[""read"",""write""]",False

@@ -1,0 +1,6 @@
+﻿name;third_party_type;person_type;contact_name;phone;cell_phone;email;address;municipality_id;division_id;country_id;nit
+Juan Rodriguez;P;N;Ana LÃ³pez;+57 3102345678;+57 3102345678;P2@masatos.com;Av 4 #33-22;cdca54df-e821-40e1-978f-db3b26a53760;1039e107-6e81-4c7b-80c9-ee658f0e9a71;75f9c437-0813-42fe-8d9a-ec84929fcc3f;18415800
+Sandra Prieto;P;N;Jorge PÃ©rez;+57 3112223344;+57 3112223344;P3@masatos.com;Cll 15 #5-50;cdca54df-e821-40e1-978f-db3b26a53760;1039e107-6e81-4c7b-80c9-ee658f0e9a71;75f9c437-0813-42fe-8d9a-ec84929fcc3f;18415801
+Alfonso Ruiz;P;N;Gloria Romero;+57 3219876543;+57 3219876543;P4@masatos.com;Diag 23 #7-19;cdca54df-e821-40e1-978f-db3b26a53760;1039e107-6e81-4c7b-80c9-ee658f0e9a71;75f9c437-0813-42fe-8d9a-ec84929fcc3f;18415802
+Camilo Torres;P;N;Laura RÃ­os;+57 3007654321;+57 3007654321;P5@masatos.com;Cra 55 #45-32;cdca54df-e821-40e1-978f-db3b26a53760;1039e107-6e81-4c7b-80c9-ee658f0e9a71;75f9c437-0813-42fe-8d9a-ec84929fcc3f;18415803
+Esteban Arias;P;N;Lina Cano;+57 3025566778;+57 3025566778;P6@masatos.com;Cll 120 #17-20;cdca54df-e821-40e1-978f-db3b26a53760;1039e107-6e81-4c7b-80c9-ee658f0e9a71;75f9c437-0813-42fe-8d9a-ec84929fcc3f;18415804

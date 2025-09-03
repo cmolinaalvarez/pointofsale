@@ -1,0 +1,182 @@
+@startuml OAuth2_Sequence_Diagram
+!theme plain
+title Secuencia OAuth2 - Diferentes Clientes y Scopes
+
+actor "Usuario" as User
+participant "Frontend Web" as WebApp
+participant "Mobile App" as MobileApp
+participant "OAuth2 Server" as AuthServer
+participant "Products API" as ProductsAPI
+participant "Reports API" as ReportsAPI
+database "Database" as DB
+
+== Configuración Inicial de Clientes ==
+
+note over DB
+OAuth2 Clients en Base de Datos:
+- frontend_web_v1: [read, write, read:products, write:products, read:users]
+- mobile_pos_v1: [read, read:products, pos:sales, write:sales]
+- reports_api_v1: [read, read:reports, advanced:reports, export:reports]
+end note
+
+== Flujo 1: Frontend Web (Permisos Completos) ==
+
+User -> WebApp: Login (user@test.com, password123)
+WebApp -> AuthServer: POST /auth/token
+note right
+grant_type=password
+username=user@test.com
+password=password123
+client_id=frontend_web_v1_abc123
+client_secret=web_secret_hash
+scope=read write read:products write:products
+end note
+
+AuthServer -> DB: Validar client_id + client_secret
+DB -> AuthServer: Cliente válido con allowed_scopes
+AuthServer -> DB: Validar user credentials
+DB -> AuthServer: Usuario válido
+
+AuthServer -> AuthServer: Calcular scopes finales
+note right
+Scopes solicitados: [read, write, read:products, write:products]
+Scopes del cliente: [read, write, read:products, write:products, read:users]
+Scopes finales: [read, write, read:products, write:products] ✅
+end note
+
+AuthServer -> AuthServer: Generar JWT token
+AuthServer -> WebApp: HTTP 200 + Token
+note right
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer",
+  "expires_in": 3600,
+  "scopes": ["read", "write", "read:products", "write:products"]
+}
+end note
+
+WebApp -> WebApp: Almacenar token
+
+User -> WebApp: Crear nuevo producto
+WebApp -> ProductsAPI: POST /products/\nAuthorization: Bearer <token>
+ProductsAPI -> ProductsAPI: Extraer y validar token
+ProductsAPI -> ProductsAPI: @require_scope("write:products")
+note right
+Token decodificado:
+{
+  "sub": "user_123",
+  "scopes": ["read", "write", "read:products", "write:products"],
+  "exp": 1640995200
+}
+✅ "write:products" presente en scopes
+end note
+
+ProductsAPI -> DB: Crear producto
+DB -> ProductsAPI: Producto creado
+ProductsAPI -> WebApp: HTTP 201 Created
+WebApp -> User: ✅ Producto creado exitosamente
+
+== Flujo 2: Mobile App (Permisos Limitados) ==
+
+User -> MobileApp: Login (same credentials)
+MobileApp -> AuthServer: POST /auth/token
+note right
+client_id=mobile_pos_v1_def456
+client_secret=mobile_secret_hash
+scope=read read:products write:sales
+end note
+
+AuthServer -> DB: Validar mobile client
+DB -> AuthServer: Cliente móvil válido
+AuthServer -> AuthServer: Calcular scopes finales
+note right
+Scopes solicitados: [read, read:products, write:sales]
+Scopes del cliente: [read, read:products, pos:sales, write:sales]
+Scopes finales: [read, read:products, write:sales] ✅
+end note
+
+AuthServer -> MobileApp: Token con scopes limitados
+
+User -> MobileApp: Intentar crear producto
+MobileApp -> ProductsAPI: POST /products/\nAuthorization: Bearer <mobile_token>
+ProductsAPI -> ProductsAPI: @require_scope("write:products")
+note right
+Token móvil decodificado:
+{
+  "sub": "user_123",
+  "scopes": ["read", "read:products", "write:sales"],
+  "exp": 1640995200
+}
+❌ "write:products" NO presente en scopes
+end note
+
+ProductsAPI -> MobileApp: HTTP 403 Forbidden
+note right
+{
+  "detail": "Acceso denegado. Scope requerido: write:products. 
+            Scopes disponibles: read, read:products, write:sales"
+}
+end note
+MobileApp -> User: ❌ No tienes permisos para crear productos
+
+User -> MobileApp: Consultar productos (operación permitida)
+MobileApp -> ProductsAPI: GET /products/\nAuthorization: Bearer <mobile_token>
+ProductsAPI -> ProductsAPI: @require_scope("read:products")
+note right
+✅ "read:products" presente en token móvil
+end note
+
+ProductsAPI -> DB: Obtener productos
+DB -> ProductsAPI: Lista de productos
+ProductsAPI -> MobileApp: HTTP 200 + productos
+MobileApp -> User: ✅ Lista de productos mostrada
+
+== Flujo 3: API Externa de Reportes ==
+
+User -> ReportsAPI: Request directo con API key
+note left: Proceso automático/programado
+ReportsAPI -> AuthServer: POST /auth/token
+note right
+client_id=reports_api_v1_ghi789
+client_secret=reports_secret_hash
+scope=read:reports advanced:reports
+end note
+
+AuthServer -> DB: Validar reports client
+AuthServer -> ReportsAPI: Token especializado
+
+ReportsAPI -> ReportsAPI: Generar reporte de ventas
+ReportsAPI -> ProductsAPI: GET /products/\n@require_scope("read:products")
+note right
+Token de reportes:
+{
+  "scopes": ["read", "read:reports", "advanced:reports"]
+}
+❌ "read:products" NO presente
+end note
+
+ProductsAPI -> ReportsAPI: HTTP 403 Forbidden
+ReportsAPI -> User: ❌ No puede acceder a datos de productos
+
+== Comparación de Capacidades ==
+
+note over WebApp, ReportsAPI
+**Resumen de Capacidades por Cliente:**
+
+🖥️ **Frontend Web**:
+✅ Leer productos, ✅ Crear productos, ✅ Leer usuarios
+❌ Generar reportes avanzados
+
+📱 **Mobile App**:
+✅ Leer productos, ❌ Crear productos, ✅ Procesar ventas
+❌ Leer usuarios, ❌ Reportes
+
+📊 **Reports API**:
+❌ Leer productos, ❌ Crear productos, ✅ Reportes avanzados
+❌ Procesar ventas, ❌ Leer usuarios
+
+**Principio de Menor Privilegio**: Cada cliente solo tiene los 
+permisos mínimos necesarios para su función específica.
+end note
+
+@enduml

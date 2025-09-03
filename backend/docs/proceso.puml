@@ -1,0 +1,35 @@
+[Inicio]
+   |
+   v
+[Obtener token de autenticación]
+   |
+   v
+¿Token válido?
+   |---- No ----> [Mostrar mensaje "No Token"] --> [Fin]
+   |
+   v
+[Solicitar marcas al backend (GET)]
+   |
+   v
+¿Respuesta exitosa?
+   |---- No ----> [Mostrar mensaje de error] --> [Fin]
+   |
+   v
+[Guardar marcas en estado]
+   |
+   v
+[Renderizar tabla de marcas]
+   |
+   v
+[Usuario puede:]
+   |-- Buscar marcas (filtrado local)
+   |-- Cambiar página (paginación local)
+   |-- Crear marca (POST)
+   |-- Editar marca (PUT)
+   |-- Activar/Inactivar marca (PUT)
+   |
+   v
+[Actualizar estado y recargar marcas]
+   |
+   v
+[Fin]

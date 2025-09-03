@@ -1,0 +1,11 @@
+code,name,description,subcategory_id
+uno,Bebidas,Desc 1,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+dos,Alimentos,Desc 2,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+tres,Snacks,Desc 3,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+cuatro,Lácteos,Desc 4,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+cinco,Frutas,Desc 5,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+seis,Verduras,Desc 6,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+siete,Carnes,Desc 7,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+ocho,Panadería,Desc 8,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+nueve,Dulces,Desc 9,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3
+diez,Otros,Desc 10,bd8633ee-3dc5-4fe2-b1ce-e612b9a377c3

@@ -1,0 +1,295 @@
+@startuml OAuth2_Complete_Flow_Summary
+!theme plain
+title Flujo Completo OAuth2 - Resumen Visual del Sistema
+
+== Configuración del Sistema ==
+
+database "PostgreSQL" as DB {
+  rectangle "users" as Users {
+    note as UserData
+    **Usuarios en BD:**
+    admin@empresa.com → ADMIN
+    gerente@empresa.com → MANAGER  
+    empleado@empresa.com → EMPLOYEE
+    cajero@empresa.com → CASHIER
+    end note
+  }
+  
+  rectangle "oauth2_clients" as Clients {
+    note as ClientData
+    **Clientes OAuth2:**
+    frontend_web_v1 → [admin, write:products, read:users]
+    mobile_pos_v1 → [read:products, pos:sales]
+    reports_api_v1 → [read:reports, advanced:reports]
+    end note
+  }
+}
+
+== Flujo de Autenticación ==
+
+actor "👤 Usuario" as User
+participant "💻 Cliente\n(Web/Mobile/API)" as Client
+participant "🔐 OAuth2 Server\n(/auth/token)" as OAuth2Server
+participant "🛡️ Middleware\n(Interceptor)" as Middleware
+participant "🎯 Endpoint\n(@require_scope)" as Endpoint
+participant "💾 Database" as Database
+
+User -> Client: **1.** Login con credenciales
+note right of User
+**Datos de entrada:**
+- Email: admin@empresa.com
+- Password: admin123
+- Cliente: frontend_web_v1
+end note
+
+Client -> OAuth2Server: **2.** POST /auth/token
+note right of Client
+**Request OAuth2:**
+grant_type=password
+username=admin@empresa.com
+password=admin123
+client_id=frontend_web_v1_abc123
+client_secret=web_secret_hash
+scope=read write read:products write:products admin
+end note
+
+OAuth2Server -> Database: **3.** Validar Cliente OAuth2
+note right of OAuth2Server: SELECT * FROM oauth2_clients WHERE client_id=?
+
+Database -> OAuth2Server: **4.** Cliente válido + allowed_scopes
+note left of Database: ✅ Cliente encontrado con scopes permitidos
+
+OAuth2Server -> Database: **5.** Buscar Usuario por email
+note right of OAuth2Server: SELECT * FROM users WHERE email=?
+
+Database -> OAuth2Server: **6.** Usuario encontrado
+note left of Database
+**Usuario obtenido:**
+- id: user_123
+- email: admin@empresa.com
+- role: ADMIN
+- superuser: true
+end note
+
+OAuth2Server -> OAuth2Server: **7.** Calcular Scopes Finales
+note over OAuth2Server
+**Cálculo de Scopes:**
+
+1. **Scopes solicitados:** [read, write, read:products, write:products, admin]
+2. **Scopes del cliente:** [read, write, read:products, write:products, admin, read:users]
+3. **Scopes del rol ADMIN:** [todos los scopes disponibles]
+4. **Intersección:** [read, write, read:products, write:products, admin]
+5. **Scopes finales:** [read, write, read:products, write:products, admin]
+end note
+
+OAuth2Server -> OAuth2Server: **8.** Generar Token JWT
+note over OAuth2Server
+**JWT Payload:**
+{
+  "sub": "user_123",
+  "scopes": ["read", "write", "read:products", "write:products", "admin"],
+  "exp": 1640995200,
+  "iat": 1640991600
+}
+end note
+
+OAuth2Server -> Client: **9.** Responder con Token
+note left of OAuth2Server
+**Response:**
+{
+  "access_token": "eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...",
+  "token_type": "bearer", 
+  "expires_in": 3600
+}
+end note
+
+Client -> Client: **10.** Almacenar Token
+note over Client: localStorage.setItem('token', access_token)
+
+== Flujo de Request Protegido ==
+
+User -> Client: **11.** Crear nuevo producto
+Client -> Endpoint: **12.** POST /products/
+note right of Client
+**HTTP Request:**
+POST /products/
+Authorization: Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJIUzI1NiJ9...
+Content-Type: application/json
+
+{
+  "name": "Producto Nuevo",
+  "price": 150.00,
+  "category_id": "cat_123"
+}
+end note
+
+Endpoint -> Middleware: **13.** Interceptar Request
+note over Middleware
+**OAuth2Middleware.__call__():**
+1. Extraer Authorization header
+2. Validar formato "Bearer <token>"
+3. Decodificar JWT token
+4. Verificar expiración
+5. Guardar datos en request.state
+end note
+
+Middleware -> Middleware: **14.** Validar Token JWT
+note over Middleware
+**Validación JWT:**
+- Token signature: ✅ VÁLIDA
+- Token expiration: ✅ NO EXPIRADO
+- Token format: ✅ CORRECTO
+
+**Datos extraídos:**
+- user_id: "user_123"
+- scopes: ["read", "write", "read:products", "write:products", "admin"]
+end note
+
+Middleware -> Endpoint: **15.** Continuar al Endpoint
+note over Middleware: request.state.token_payload = decoded_data
+
+Endpoint -> Endpoint: **16.** Ejecutar @require_scope("write:products")
+note over Endpoint
+**Decorador @require_scope:**
+
+```python
+@router.post("/products/")
+@require_scope("write:products")
+async def create_product():
+    pass
+```
+
+**Validación:**
+1. token_scopes = ["read", "write", "read:products", "write:products", "admin"]
+2. required_scope = "write:products"
+3. ¿"write:products" in token_scopes? → ✅ SÍ
+4. ¿"admin" in token_scopes? → ✅ SÍ (bypass automático)
+5. **Resultado: PERMITIR ACCESO**
+end note
+
+Endpoint -> Database: **17.** Ejecutar Función del Endpoint
+note right of Endpoint: INSERT INTO products (name, price, category_id, created_by)
+
+Database -> Endpoint: **18.** Producto creado exitosamente
+Endpoint -> Client: **19.** HTTP 201 Created
+note left of Endpoint
+**Response:**
+{
+  "id": "prod_456",
+  "name": "Producto Nuevo",
+  "price": 150.00,
+  "category_id": "cat_123",
+  "created_at": "2024-01-01T10:00:00Z",
+  "created_by": "user_123"
+}
+end note
+
+Client -> User: **20.** ✅ Producto creado exitosamente
+
+== Flujo de Request Denegado (Ejemplo Cajero) ==
+
+actor "👤 Cajero" as Cashier
+participant "📱 Mobile App" as MobileApp
+participant "🛡️ Middleware" as MW2
+participant "🎯 Endpoint" as EP2
+
+Cashier -> MobileApp: Intentar crear producto
+MobileApp -> EP2: POST /products/\nAuthorization: Bearer <cashier_token>
+
+EP2 -> MW2: Interceptar request
+note over MW2
+**Token de Cajero:**
+{
+  "sub": "cashier_456",
+  "scopes": ["read", "read:products", "pos:sales"],
+  "exp": 1640995200
+}
+end note
+
+MW2 -> EP2: Token válido, continuar
+
+EP2 -> EP2: Ejecutar @require_scope("write:products")
+note over EP2
+**Validación FALLIDA:**
+1. token_scopes = ["read", "read:products", "pos:sales"]
+2. required_scope = "write:products"
+3. ¿"write:products" in token_scopes? → ❌ NO
+4. ¿"admin" in token_scopes? → ❌ NO
+5. **Resultado: DENEGAR ACCESO**
+end note
+
+EP2 -> MobileApp: HTTP 403 Forbidden
+note left of EP2
+**Error Response:**
+{
+  "detail": "Acceso denegado. Scope requerido: write:products. 
+            Scopes disponibles: read, read:products, pos:sales"
+}
+end note
+
+MobileApp -> Cashier: ❌ No tienes permisos para esta acción
+
+== Resumen de Estados del Sistema ==
+
+note as SystemStates
+**Estados y Validaciones del Sistema:**
+
+**🟢 Estado 1: Login Exitoso**
+- ✅ Cliente OAuth2 válido
+- ✅ Credenciales de usuario correctas  
+- ✅ Scopes calculados según rol
+- ✅ Token JWT generado
+
+**🟢 Estado 2: Request Permitido**
+- ✅ Token válido y no expirado
+- ✅ Scope requerido presente en token
+- ✅ Función del endpoint ejecutada
+
+**🔴 Estado 3: Request Denegado**
+- ✅ Token válido
+- ❌ Scope requerido ausente
+- ❌ HTTP 403 Forbidden
+
+**🔴 Estado 4: Token Inválido**
+- ❌ Token expirado/corrupto
+- ❌ HTTP 401 Unauthorized
+
+**🔴 Estado 5: Sin Autenticación**
+- ❌ Sin Authorization header
+- ❌ HTTP 401 Unauthorized
+end note
+
+== Puntos Clave del Sistema ==
+
+note as KeyPoints
+**🔑 Puntos Clave del Flujo:**
+
+**1. El Perfil se Obtiene UNA SOLA VEZ:**
+   - En el momento del login (/auth/token)
+   - Se consulta user.role en la base de datos
+   - Se calculan los scopes según el rol
+   - Se codifican en el token JWT
+
+**2. Las Validaciones son EN MEMORIA:**
+   - No hay consultas a BD en cada request
+   - El token contiene toda la info necesaria
+   - Validación súper rápida (~1ms)
+
+**3. Diferentes Clientes = Diferentes Capacidades:**
+   - Frontend Web: Scopes administrativos
+   - Mobile POS: Solo operaciones de venta
+   - API Externa: Solo reportes
+
+**4. Seguridad por Capas:**
+   - OAuth2: Validación de cliente
+   - JWT: Validación de token
+   - Scopes: Validación de permisos
+   - Roles: Validación de usuario
+
+**5. Principio de Menor Privilegio:**
+   - Cada token solo tiene permisos mínimos
+   - Los scopes se filtran por cliente y rol
+   - Tokens específicos por contexto de uso
+end note
+
+@enduml

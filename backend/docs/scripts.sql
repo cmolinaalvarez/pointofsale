@@ -1,0 +1,93 @@
+delete FROM public.countries;
+select * FROM public.countries;
+TRUNCATE TABLE public.countries RESTART IDENTITY;
+SELECT last_value FROM public.countries_id_seq;
+
+delete FROM public.divisions;
+select * FROM public.divisions;
+TRUNCATE TABLE divisions, countries RESTART IDENTITY CASCADE;
+SELECT pg_get_serial_sequence('divisions', 'id');
+SELECT last_value FROM public.divisions_id_seq;
+
+delete FROM public.municipalities;
+select * FROM public.municipalities;
+TRUNCATE TABLE public.municipalities RESTART IDENTITY;
+SELECT last_value FROM public.municipalities_id_seq;
+
+delete from public.categories;
+TRUNCATE TABLE public.categories RESTART IDENTITY;
+select * from public.categories;
+
+TRUNCATE TABLE products, categories, brands, units RESTART IDENTITY CASCADE;
+delete from public.products;
+select * from public.products;
+SELECT last_value FROM public.products_id_seq;
+
+select * from public.orders
+select * from public.order_items
+delete from public.order_items
+delete from public.orders
+TRUNCATE TABLE orders, order_items RESTART IDENTITY CASCADE;
+SELECT last_value FROM public.orders_id_seq;
+SELECT last_value FROM public.order_items_id_seq;
+
+select * from public.entries
+select * from public.entry_items
+delete from public.entry_items
+delete from public.entries
+TRUNCATE TABLE entries, entry_items RESTART IDENTITY CASCADE;
+SELECT last_value FROM public.entries_id_seq;
+SELECT last_value FROM public.entry_items_id_seq;
+select * from public.concepts
+delete from public.concepts
+TRUNCATE TABLE concepts RESTART IDENTITY;
+SELECT last_value FROM public.concepts_id_seq;
+
+select * from public.third_parties
+delete from public.third_parties
+TRUNCATE TABLE third_parties RESTART IDENTITY;
+SELECT last_value FROM public.third_parties_id_seq;
+
+select * from public.units
+delete from public.units
+TRUNCATE TABLE units RESTART IDENTITY;
+SELECT last_value FROM public.units_id_seq;
+
+select * from public.brands
+delete from public.brands
+TRUNCATE TABLE brands RESTART IDENTITY;
+SELECT last_value FROM public.brands_id_seq;
+
+select * from public.settings
+delete from public.settings
+TRUNCATE TABLE settings RESTART IDENTITY;
+SELECT last_value FROM public.settings_id_seq;
+
+select * from public.users
+delete from public.users
+TRUNCATE TABLE users RESTART IDENTITY CASCADE;
+SELECT last_value FROM public.settings_id_seq;
+
+-- Backup base de datos
+pg_dump -U postgres -h localhost -p 5432 -F c -b -v -f "E:\Desarrollo\PointOfSale\backups\pointofsale.backup" pointofsale
+-- Resore base de datos
+dropdb -U postgres -h localhost -p 5432 pedidos
+createdb -U postgres -h localhost -p 5432 pedidos
+pg_restore -U postgres -h localhost -p 5432 -d pedidos -v "E:\Desarrollo\PointOfSale\backups\pointofsale.backup"
+pg_restore -U postgres -h localhost -p 5432 -d pedidos -v "E:\Desarrollo\PointOfSale - 28JUL2025B\backups\pointofsale.backup"
+
+
+
+--Consulta para mostrar la hora local (ejemplo con Colombia):
+SELECT
+  created_at AS original_utc,
+  created_at AT TIME ZONE 'UTC' AT TIME ZONE 'America/Bogota' AS local_time
+FROM
+  audit_logs;
+
+
+
+
+
+
+

@@ -1,0 +1,188 @@
+@startuml OAuth2_Architecture_Diagram
+!theme plain
+title Arquitectura OAuth2 con Scopes - Sistema de Ventas
+
+!define RECTANGLE class
+
+== Capa de Clientes ==
+
+RECTANGLE "Frontend Web Application" as WebFrontend {
+  + Scopes: read, write, read:products, write:products, read:users
+  + Funcionalidades: CRUD completo, administración
+  + Usuarios: Administradores, managers
+}
+
+RECTANGLE "Mobile POS Application" as MobileApp {
+  + Scopes: read, read:products, pos:sales, write:sales
+  + Funcionalidades: Punto de venta, consultas
+  + Usuarios: Cajeros, vendedores
+}
+
+RECTANGLE "External Reports API" as ExternalAPI {
+  + Scopes: read:reports, advanced:reports, export:reports
+  + Funcionalidades: Reportería, análisis
+  + Usuarios: Sistemas externos, BI
+}
+
+RECTANGLE "Third Party Integration" as ThirdParty {
+  + Scopes: read (solo lectura)
+  + Funcionalidades: Consultas básicas
+  + Usuarios: Integraciones externas
+}
+
+== Capa de Autenticación OAuth2 ==
+
+RECTANGLE "OAuth2 Authorization Server" as AuthServer {
+  + Endpoint: /auth/token
+  + Validación de credenciales
+  + Generación de tokens JWT
+  + Gestión de scopes
+}
+
+database "OAuth2 Clients Database" as ClientsDB {
+  + client_id (único)
+  + client_secret (hasheado)
+  + allowed_scopes (array)
+  + allowed_grant_types
+  + active (boolean)
+  + created_by, created_at
+}
+
+RECTANGLE "Scope Validator" as ScopeValidator {
+  + validate_scopes()
+  + has_scope()
+  + AVAILABLE_SCOPES (30+ scopes)
+}
+
+RECTANGLE "JWT Token Handler" as JWTHandler {
+  + create_access_token()
+  + decode_access_token()
+  + Include scopes in payload
+}
+
+== Capa de APIs Protegidas ==
+
+RECTANGLE "Products API" as ProductsAPI {
+  + GET /products/ → @require_scope("read:products")
+  + POST /products/ → @require_scope("write:products")
+  + PUT /products/{id} → @require_scope("write:products")
+  + DELETE /products/{id} → @require_scope("delete:products")
+}
+
+RECTANGLE "Users API" as UsersAPI {
+  + GET /users/ → @require_scope("read:users")
+  + POST /users/ → @require_scope("admin")
+  + PUT /users/{id} → @require_scope("write:users")
+}
+
+RECTANGLE "Purchases API" as PurchasesAPI {
+  + GET /purchases/ → @require_scope("read:purchases")
+  + POST /purchases/ → @require_scope("write:purchases")
+  + POST /purchases/import → @require_scope("import:purchases")
+}
+
+RECTANGLE "Sales API" as SalesAPI {
+  + GET /sales/ → @require_scope("read:sales")
+  + POST /sales/ → @require_scope("write:sales")
+  + POST /sales/pos → @require_scope("pos:sales")
+}
+
+RECTANGLE "Reports API" as ReportsAPI {
+  + GET /reports/ → @require_scope("read:reports")
+  + GET /reports/advanced → @require_scope("advanced:reports")
+  + POST /reports/export → @require_scope("export:reports")
+}
+
+RECTANGLE "System APIs" as SystemAPI {
+  + Brands, Categories → @require_scope("read:products", "write:products")
+  + Warehouses → @require_scope("read:inventory", "write:inventory")
+  + Settings → @require_scope("read:system", "write:system")
+}
+
+== Capa de Middleware ==
+
+RECTANGLE "OAuth2 Middleware" as OAuth2Middleware {
+  + OAuth2ClientValidator
+  + require_scope() decorator
+  + Token extraction and validation
+  + Scope verification per endpoint
+}
+
+RECTANGLE "Request Interceptor" as RequestInterceptor {
+  + Extract Authorization header
+  + Decode JWT token
+  + Store scopes in request.state
+  + Handle authentication errors
+}
+
+== Flujo de Datos ==
+
+WebFrontend -down-> AuthServer : 1. Solicitar token\ncon scopes completos
+MobileApp -down-> AuthServer : 1. Solicitar token\ncon scopes limitados
+ExternalAPI -down-> AuthServer : 1. Solicitar token\npara reportes
+ThirdParty -down-> AuthServer : 1. Solicitar token\nsolo lectura
+
+AuthServer -right-> ClientsDB : 2. Validar cliente\ny scopes permitidos
+AuthServer -right-> ScopeValidator : 3. Validar scopes\nsolicitados
+AuthServer -right-> JWTHandler : 4. Generar token\ncon scopes
+
+AuthServer -up-> WebFrontend : 5. Token con scopes:\n[read, write, read:products, write:products]
+AuthServer -up-> MobileApp : 5. Token con scopes:\n[read, read:products, pos:sales]
+AuthServer -up-> ExternalAPI : 5. Token con scopes:\n[read:reports, advanced:reports]
+AuthServer -up-> ThirdParty : 5. Token con scopes:\n[read]
+
+WebFrontend -down-> OAuth2Middleware : 6. Request con token
+MobileApp -down-> OAuth2Middleware : 6. Request con token
+ExternalAPI -down-> OAuth2Middleware : 6. Request con token
+
+OAuth2Middleware -right-> RequestInterceptor : 7. Extraer y validar token
+RequestInterceptor -down-> ProductsAPI : 8. Request con scopes\nvalidados
+RequestInterceptor -down-> UsersAPI : 8. Request con scopes\nvalidados
+RequestInterceptor -down-> SalesAPI : 8. Request con scopes\nvalidados
+RequestInterceptor -down-> ReportsAPI : 8. Request con scopes\nvalidados
+
+== Matriz de Permisos ==
+
+note as PermissionTable
+**Matriz de Acceso por Cliente:**
+
+| API Endpoint | Frontend Web | Mobile POS | Reports API | Third Party |
+|--------------|--------------|------------|-------------|-------------|
+| GET /products/ | ✅ | ✅ | ❌ | ✅ |
+| POST /products/ | ✅ | ❌ | ❌ | ❌ |
+| GET /sales/ | ✅ | ✅ | ❌ | ✅ |
+| POST /sales/ | ✅ | ✅ | ❌ | ❌ |
+| POST /sales/pos | ❌ | ✅ | ❌ | ❌ |
+| GET /users/ | ✅ | ❌ | ❌ | ❌ |
+| POST /users/ | ✅* | ❌ | ❌ | ❌ |
+| GET /reports/ | ❌ | ❌ | ✅ | ❌ |
+| GET /reports/advanced | ❌ | ❌ | ✅ | ❌ |
+
+*Solo si el usuario es superuser
+end note
+
+== Beneficios de esta Arquitectura ==
+
+note as Benefits
+**🔐 Seguridad:**
+- Principio de menor privilegio
+- Tokens específicos por cliente
+- Validación granular de permisos
+
+**📈 Escalabilidad:**
+- Fácil agregar nuevos clientes
+- Scopes configurables dinámicamente
+- API unificada para todos los clientes
+
+**🔧 Mantenibilidad:**
+- Scopes centralizados
+- Decoradores reutilizables
+- Logging y auditoría automática
+
+**🚀 Flexibilidad:**
+- Diferentes niveles de acceso
+- Clientes especializados
+- Fácil integración con terceros
+end note
+
+@enduml

@@ -1,0 +1,12 @@
+﻿code,name,description,prefix,document_type
+ENT,Entrada,Description 1,ENT,E
+SAL,Salida,Description 2,SAL,E
+VEN,Venta,Description 3,VEN,E
+DEV,Devolución,Description 4,DEV,E
+AJI,Ajuste de Inventario,Description 5,AJI,E
+TFR,Transferencia,Description 6,TFR,E
+NOC,Nota Crédito,Description 7,NOC,E
+NOD,Nota Débito,Description 8,NOD,E
+CON,Consignación,Description 9,CON,E
+FAC,Factura Compra,Description 10,FAC,E
+OPE,Pedido,Description 11,OPE,E
