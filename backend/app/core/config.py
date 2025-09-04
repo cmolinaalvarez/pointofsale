@@ -28,4 +28,7 @@ class Settings(BaseSettings):
     APP_ENV: str = "dev"
     ALLOWED_ORIGINS: str = ""
     
+    MAX_IMPORT_ROWS: int = 1000  # leído desde .env
+    
+    
 settings = Settings()

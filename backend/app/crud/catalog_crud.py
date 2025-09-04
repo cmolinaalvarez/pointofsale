@@ -6,10 +6,10 @@ import logging
 from fastapi import HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.future import select
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError, SQLAlchemyError
 
-from app.utils.security_utils import SecurityUtils
+from app.utils.security_utils import SecurityUtils, escape_like
 from app.utils.audit import log_action
 from app.utils.audit_level import get_audit_level
 
@@ -43,12 +43,25 @@ class CatalogCRUD:
     def _apply_search(self, query, search: Optional[str]):
         if not search:
             return query
-        s = SecurityUtils.sanitize_input(search, "search")
+        raw = search.strip()
+        if not raw:
+            return query
+
+        # Sanitiza y ESCAPA comodines para LIKE
+        s = SecurityUtils.sanitize_input(raw, "search")
+        pattern = f"%{escape_like(s)}%"
+
         conds = []
         for f in self.search_fields:
             if hasattr(self.model, f):
-                conds.append(self._get_col(f).ilike(f"%{s}%"))
-        return query.where(func.bool_or(*conds) if len(conds) > 1 else conds[0]) if conds else query
+                col = self._get_col(f)
+                # Usa escape="\\": respeta los backslashes agregados por escape_like
+                conds.append(col.ilike(pattern, escape="\\"))
+
+        if not conds:
+            return query
+        # OR lógico correcto entre columnas (no usar func.bool_or)
+        return query.where(or_(*conds))
 
     def _apply_active(self, query, active: Optional[bool]):
         if active is None or not self.active_field or not hasattr(self.model, self.active_field):

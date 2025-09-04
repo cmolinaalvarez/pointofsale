@@ -13,7 +13,7 @@ if TYPE_CHECKING:
     from app.models.user import User
 
 
-class RoleType(str, Enum):
+class RoleTypeEnum(str, Enum):
     ADMIN = "admin"
     MANAGER = "manager"
     EMPLOYEE = "employee"
@@ -23,28 +23,26 @@ class RoleType(str, Enum):
     SUPERVISOR = "supervisor"
     AUDITOR = "auditor"
     SYSTEM = "system"
-    # (Opcional: agregar CUSTOM si se desea soportar valores dinámicos)
-    # CUSTOM = "custom"
-
+    USER = "user"
 
 class Role(Base):
     __tablename__ = "roles"
 
     id: Mapped[uuid.UUID] = mapped_column(PG_UUID(as_uuid=True), primary_key=True, default=uuid.uuid4)
-
+    code: Mapped[str] = mapped_column(String, unique=True, index=True, nullable=False)
     name: Mapped[str] = mapped_column(String(100), nullable=False, unique=True)
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
 
     # Cambiado: antes era String(20)
-    role_type: Mapped[RoleType] = mapped_column(
+    role_type: Mapped[RoleTypeEnum] = mapped_column(
         SAEnum(
-            RoleType,
+            RoleTypeEnum,
             name="role_type_enum",
             values_callable=lambda enum_cls: [m.value for m in enum_cls],  # asegura minúsculas
         ),
         nullable=False,
         index=True,
-        default=RoleType.VIEWER,          # default en ORM
+        default=RoleTypeEnum.VIEWER,          # default en ORM
         server_default="viewer"           # default en DB (asegura no nulo si se omite en INSERT)
     )
     
@@ -79,14 +77,14 @@ class Role(Base):
     def scope_list(self, scopes: List[str]) -> None:
         self.scopes = list(scopes)
 
-    @validates("role_type")
-    def _validate_role_type(self, key, value):
+    @validates("role_type_enum")
+    def _validate_role_type_enum(self, key, value):
         if value is None:
-            return RoleType.VIEWER
-        if isinstance(value, RoleType):
+            return RoleTypeEnum.VIEWER
+        if isinstance(value, RoleTypeEnum):
             return value
         try:
-            return RoleType(str(value).lower())
+            return RoleTypeEnum(str(value).lower())
         except ValueError:
-            raise ValueError(f"role_type inválido: {value}")
-            raise ValueError(f"role_type inválido: {value}")
+            raise ValueError(f"role_type_enum inválido: {value}")
+  

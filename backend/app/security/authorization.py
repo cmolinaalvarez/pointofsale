@@ -3,7 +3,7 @@ from fastapi import Depends, HTTPException, status
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from app.models.user import User
-from app.models.role import RoleType, Role
+from app.models.role import RoleTypeEnum, Role
 from app.core.security import get_async_db
 from app.security.authentication import get_current_user
 
@@ -15,7 +15,7 @@ def has_permission(user: User, scope: str) -> bool:
     scopes = user.role.scopes or []
     return scope in scopes
 
-def requires_role(*accepted: RoleType):
+def requires_role(*accepted: RoleTypeEnum):
     async def _dep(user: User = Depends(get_current_user), db: AsyncSession = Depends(get_async_db)):
         if user.superuser: return
         if not user.role_id: _deny()

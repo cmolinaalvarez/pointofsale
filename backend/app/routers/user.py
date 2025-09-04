@@ -1,3 +1,4 @@
+# app/routers/user.py
 """Router de Usuario con actor_id para auditoría."""
 
 from fastapi import APIRouter, Depends, HTTPException, status, Query, UploadFile, File
@@ -9,9 +10,7 @@ import logging
 import csv
 from io import StringIO
 
-# Usa hashing centralizado
-from app.core.security import get_password_hash, verify_password
-
+from app.core.security import get_password_hash
 from app.schemas.user import UserCreate, UserUpdate, UserRead, UserPatch, UserListResponse
 from app.crud.user import create_user, get_users, get_user_by_id, update_user, patch_user
 from app.models.user import User
@@ -19,11 +18,30 @@ from app.dependencies.current_user import get_current_user
 from app.core.security import get_async_db
 from app.utils.audit import log_action
 
+# RBAC
+from fastapi import Depends as _Depends  # para evitar confusión con el import de arriba
+from app.security.authorization import requires_role, requires_scopes
+from app.models.role import RoleTypeEnum
+
+# Upload seguro y límites
+from app.security.input_validation import validate_upload
+from app.core.config import settings
+
 logger = logging.getLogger(__name__)
-router = APIRouter(tags=["Users"])
+
+# Lectura por defecto para todo el router
+router = APIRouter(
+    tags=["Users"],
+    dependencies=[_Depends(requires_scopes("users:read"))]
+)
 
 
-@router.post("/", response_model=UserRead)
+@router.post(
+    "/",
+    response_model=UserRead,
+    dependencies=[_Depends(requires_role(RoleTypeEnum.ADMIN)),
+                  _Depends(requires_scopes("users:create"))]
+)
 async def create_user_endpoint(
     user_in: UserCreate,
     db: AsyncSession = Depends(get_async_db),
@@ -82,7 +100,12 @@ async def read_user(
         raise HTTPException(status_code=500, detail="Error obteniendo usuario") from e
 
 
-@router.put("/{user_id}", response_model=UserRead)
+@router.put(
+    "/{user_id}",
+    response_model=UserRead,
+    dependencies=[_Depends(requires_role(RoleTypeEnum.ADMIN)),
+                  _Depends(requires_scopes("users:update"))]
+)
 async def update_user_endpoint(
     user_id: UUID,
     user_in: UserUpdate,
@@ -109,7 +132,12 @@ async def update_user_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.patch("/{user_id}", response_model=UserRead)
+@router.patch(
+    "/{user_id}",
+    response_model=UserRead,
+    dependencies=[_Depends(requires_role(RoleTypeEnum.ADMIN)),
+                  _Depends(requires_scopes("users:update"))]
+)
 async def patch_user_endpoint(
     user_id: UUID,
     user_in: UserPatch,
@@ -136,15 +164,32 @@ async def patch_user_endpoint(
         raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.post("/import", status_code=201)
+@router.post(
+    "/import",
+    status_code=201,
+    dependencies=[_Depends(requires_role(RoleTypeEnum.ADMIN)),
+                  _Depends(requires_scopes("users:create"))]  # importa = crea en lote
+)
 async def import_users(
     file: UploadFile = File(...),
     db: AsyncSession = Depends(get_async_db),
     current_user: User = Depends(get_current_user),
 ):
     try:
-        content = await file.read()
-        reader = csv.DictReader(StringIO(content.decode("utf-8")))
+        # Validación de tipo/tamaño
+        raw = validate_upload(file)
+        text = raw.decode("utf-8", errors="ignore")
+
+        # Límite de filas (excluye encabezado)
+        reader = csv.DictReader(StringIO(text))
+        rows = 0
+        for _ in reader:
+            rows += 1
+            if rows > settings.MAX_IMPORT_ROWS:
+                raise HTTPException(status_code=400, detail="Demasiadas filas en el archivo")
+
+        # Reiniciar lector y normalizar encabezados
+        reader = csv.DictReader(StringIO(text))
         if reader.fieldnames:
             reader.fieldnames = [h.strip().replace('\ufeff', '') for h in reader.fieldnames]
 
@@ -153,7 +198,6 @@ async def import_users(
             pwd = row.get("password")
             if not pwd:
                 continue
-            # Hash centralizado y no bloqueante
             hashed = await get_password_hash(pwd)
 
             user = User(

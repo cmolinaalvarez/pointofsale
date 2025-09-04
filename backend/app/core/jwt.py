@@ -61,4 +61,6 @@ def decode_token(token: str, *, expected_type: Optional[str] = None) -> Optional
             return None
         return payload
     except JWTError:
-        return None
+        return None    
+
+

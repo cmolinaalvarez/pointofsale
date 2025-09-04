@@ -1,6 +1,6 @@
 # Imports de todos los modelos para que Alembic los detecte
 from .user import User
-from .role import Role, RoleType
+from .role import Role, RoleTypeEnum
 from .audit_log import AuditLog
 from .account import Account
 from .brand import Brand

@@ -17,6 +17,7 @@ from app.security.input_validation import BodySanitizationMiddleware
 from app.security.authentication import JWTAuthMiddleware
 from app.core.errors import install_exception_handlers
 
+
 # ========================================================================
 # Configuración inicial
 # ========================================================================
@@ -145,10 +146,40 @@ if settings.APP_ENV == "development":
         }
         
 app.add_middleware(SecurityHeadersMiddleware)
-app.add_middleware(BodySanitizationMiddleware)   # opcional: BodySanitizationMiddleware(app, field_max={"name":100})
+app.add_middleware(BodySanitizationMiddleware,
+    field_max={"code":10, "name":100, "description":500, "basis":20}
+)
 app.add_middleware(JWTAuthMiddleware)
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, lambda r, e: e.response)
 app.add_middleware(SlowAPIMiddleware)
 install_exception_handlers(app)
 
+
+from app.models.role import Role
+from app.crud.catalog_crud import CatalogCRUD
+from app.schemas.role import RoleCreate, RoleUpdate, RoleRead, RolePatch, RoleListResponse
+from app.routers.catalog_router import build_catalog_router
+
+role_crud = CatalogCRUD(
+    model=Role,
+    table_name="Role",
+    unique_fields=("code",),
+    search_fields=("code","name","description"),
+    order_field="name",
+)
+
+app.include_router(
+    build_catalog_router(
+        prefix="/roles",
+        tags=["Roles"],
+        crud=role_crud,
+        SCreate=RoleCreate,
+        SUpdate=RoleUpdate,
+        SRead=RoleRead,
+        SPatch=RolePatch,
+        SListResponse=RoleListResponse,
+        SImportResult=None,
+    ),
+    prefix="/api",
+)

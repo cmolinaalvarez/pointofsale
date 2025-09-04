@@ -1,5 +1,5 @@
 # app/routers/catalog_router.py
-from fastapi import APIRouter, Depends, status, Query, UploadFile, File, Body
+from fastapi import APIRouter, Depends, status, Query, UploadFile, File, Body, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from typing import Optional, Type
 from uuid import UUID
@@ -7,12 +7,14 @@ from uuid import UUID
 from app.core.security import get_async_db
 from app.dependencies.current_user import get_current_user
 from app.models.user import User
+from app.security.input_validation import validate_upload
+from app.core.config import settings
 
 def build_catalog_router(
     *,
     prefix: str,
     tags: list[str],
-    crud,                         # CatalogCRUD
+    crud,
     SCreate: Type,
     SUpdate: Type,
     SRead: Type,
@@ -24,11 +26,12 @@ def build_catalog_router(
 
     @router.post("/", response_model=SRead, status_code=status.HTTP_201_CREATED)
     async def create_item(
-        payload: SCreate = Body(...),
+        payload: dict = Body(...),
         db: AsyncSession = Depends(get_async_db),
         current_user: User = Depends(get_current_user),
     ):
-        obj = await crud.create(db, payload.model_dump(), current_user.id)
+        data = SCreate.model_validate(payload).model_dump(exclude_none=True)
+        obj = await crud.create(db, data, current_user.id)
         await db.commit()
         return obj
 
@@ -58,22 +61,24 @@ def build_catalog_router(
     @router.put("/{item_id}", response_model=SRead)
     async def update_item(
         item_id: UUID,
-        payload: SUpdate = Body(...),
+        payload: dict = Body(...),
         db: AsyncSession = Depends(get_async_db),
         current_user: User = Depends(get_current_user),
     ):
-        obj = await crud.update(db, item_id, payload.model_dump(), current_user.id)
+        data = SUpdate.model_validate(payload).model_dump(exclude_none=True)
+        obj = await crud.update(db, item_id, data, current_user.id)
         await db.commit()
         return obj
 
     @router.patch("/{item_id}", response_model=SRead)
     async def patch_item(
         item_id: UUID,
-        payload: SPatch = Body(...),
+        payload: dict = Body(...),
         db: AsyncSession = Depends(get_async_db),
         current_user: User = Depends(get_current_user),
     ):
-        obj = await crud.patch(db, item_id, payload.model_dump(exclude_unset=True), current_user.id)
+        data = SPatch.model_validate(payload).model_dump(exclude_unset=True, exclude_none=True)
+        obj = await crud.patch(db, item_id, data, current_user.id)
         await db.commit()
         return obj
 
@@ -94,7 +99,11 @@ def build_catalog_router(
             db: AsyncSession = Depends(get_async_db),
             current_user: User = Depends(get_current_user),
         ):
-            text = (await file.read()).decode(errors="ignore")
+            raw_bytes = validate_upload(file)
+            text = raw_bytes.decode("utf-8", errors="ignore")
+            lines = [ln for ln in text.splitlines() if ln.strip()]
+            if len(lines) > 1 and (len(lines) - 1) > settings.MAX_IMPORT_ROWS:
+                raise HTTPException(status_code=400, detail="Demasiadas filas en el archivo")
             result = await crud.import_csv_text(db, text, current_user.id)
             await db.commit()
             return result

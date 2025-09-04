@@ -47,7 +47,7 @@ from app.db.base import Base
 # ⚠️ Si no importas un modelo, Alembic no lo verá en autogenerate
 from app.models import user, role, brand, audit_log, setting, category, subcategory, group, subgroup, \
     unit, account, concept, document, country, division, municipality, product, warehouse, \
-    third_party, purchase, entry, stock, payment_term, oauth2_client 
+    third_party, purchase, entry, stock, payment_term
  
 # Obtenemos los metadatos de los modelos ORM (tablas, columnas, etc.)
 target_metadata = Base.metadata

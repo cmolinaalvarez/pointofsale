@@ -3,6 +3,8 @@ import json, re, html
 from typing import Any, Mapping
 from starlette.middleware.base import BaseHTTPMiddleware
 from fastapi import Request, HTTPException, status, UploadFile
+from app.core.config import settings
+import io
 
 SCRIPT_RE = re.compile(r"<\s*\/?\s*script[^>]*>", re.I)
 EVENT_HANDLER_RE = re.compile(r"on\w+\s*=", re.I)
@@ -38,9 +40,23 @@ class BodySanitizationMiddleware(BaseHTTPMiddleware):
             async def receive(): return {"type":"http.request","body":new_body,"more_body":False}
             request._receive = receive  # type: ignore
         return await call_next(request)
-
-ALLOWED_CONTENT_TYPES = {"image/png","image/jpeg","application/pdf"}
+    
+ALLOWED_CONTENT_TYPES = {"image/png", "image/jpeg", "application/pdf"}
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
 def validate_upload(file: UploadFile):
     if file.content_type not in ALLOWED_CONTENT_TYPES:
         raise HTTPException(status_code=400, detail="Invalid file type")
+    
+def validate_upload(file: UploadFile) -> bytes:
+    if file.content_type not in ALLOWED_CONTENT_TYPES:
+        raise HTTPException(status_code=400, detail="Invalid file type")
+    max_bytes = settings.MAX_IMPORT_FILE_SIZE_MB * 1024 * 1024
+    buf = io.BytesIO()
+    while True:
+        chunk = file.file.read(65536)
+        if not chunk:
+            break
+        buf.write(chunk)
+        if buf.tell() > max_bytes:
+            raise HTTPException(status_code=400, detail="File too large")
+    return buf.getvalue()
