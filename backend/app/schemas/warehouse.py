@@ -1,58 +1,31 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# BASE
-class WarehouseBase(BaseModel):
-    code: str
-    name: str
-    description: Optional[str] = None
-    location: Optional[str] = None
-    active: bool = True
+class WarehouseBase(EntityBase): pass
+class WarehouseCreate(WarehouseBase): pass
+class WarehouseUpdate(WarehouseBase): pass
 
-# CREATE (POST)
-class WarehouseCreate(WarehouseBase):
-    pass
-
-# UPDATE (PUT)
-class WarehouseUpdate(WarehouseBase):
-    pass
-
-# PATCH (parcial)
-class WarehousePatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    location: Optional[str] = None
+class WarehousePatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-# LECTURA (GET)
-class WarehouseRead(WarehouseBase):
+class WarehouseRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
     description: Optional[str] = None
-    location: Optional[str] = None
     active: bool
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# LISTADO PAGINADO
-class WarehouseListResponse(BaseModel):
+class WarehouseListResponse(SecureBaseModel):
     total: int
     items: List[WarehouseRead]
-
-    class Config:
-        from_attributes = True
-
-# RESULTADO DE IMPORTACIÓN MASIVA
-class WarehouseImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

@@ -1,71 +1,36 @@
-from pydantic import BaseModel
+from typing import Optional, List, Any
 from uuid import UUID
-from typing import Optional, List
 from datetime import datetime
+from pydantic import Field
+from app.schemas.security_schemas import SecureBaseModel
 
-# =====================
-# BASE
-# =====================
-class SettingBase(BaseModel):
-    key: str
-    value: Optional[str] = None
-    type: str = "string"
-    description: Optional[str] = None
+class SettingBase(SecureBaseModel):
+    key: str = Field(..., min_length=1, max_length=64)
+    value: Any = None
+    description: Optional[str] = Field(None, max_length=500)
+    active: bool = True
 
-# =====================
-# CREATE (POST)
-# =====================
-class SettingCreate(SettingBase):
-    key: str
-    value: Optional[str] = None
-    type: str = "string"
-    description: Optional[str] = None
+class SettingCreate(SettingBase): pass
+class SettingUpdate(SettingBase): pass
 
-# =====================
-# UPDATE (PUT)
-# =====================
-class SettingUpdate(SettingBase):
-    active: bool
-
-# =====================
-# PATCH (PATCH)
-# =====================
-class SettingPatch(BaseModel):
-    key: Optional[str] = None
-    value: Optional[str] = None
-    type: Optional[str] = None
-    description: Optional[str] = None
-    user_id: Optional[UUID] = None
+class SettingPatch(SecureBaseModel):
+    key: Optional[str] = Field(None, min_length=1, max_length=64)
+    value: Optional[Any] = None
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-# =====================
-# LECTURA (GET)
-# =====================
-class SettingRead(SettingBase):
+class SettingRead(SecureBaseModel):
     id: UUID
-    user_id: UUID
+    key: str
+    value: Any
+    description: Optional[str] = None
+    active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
-    active:bool
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# =====================
-# RESPUESTA DE LISTA
-# =====================
-class SettingListResponse(BaseModel):
+class SettingListResponse(SecureBaseModel):
     total: int
     items: List[SettingRead]
-
-    class Config:
-        from_attributes = True
-
-# =====================
-# RESULTADO DE IMPORTACIÓN MASIVA (opcional)
-# =====================
-class SettingImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

@@ -1,54 +1,46 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
 
-# BASE
-class CategoryBase(BaseModel):
-    code: str
-    name: str
-    description: Optional[str] = None
-    active: bool = True
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# CREATE (POST)
+class CategoryBase(EntityBase):
+    pass
+
 class CategoryCreate(CategoryBase):
     pass
 
-# UPDATE (PUT)
 class CategoryUpdate(CategoryBase):
     pass
 
-# PATCH (parcial)
-class CategoryPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
+class CategoryPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-# LECTURA (GET)
-class CategoryRead(CategoryBase):
+class CategoryRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
     description: Optional[str] = None
     active: bool
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
 
     class Config:
         from_attributes = True
 
-# LISTADO PAGINADO
-class CategoryListResponse(BaseModel):
+class CategoryListResponse(SecureBaseModel):
     total: int
     items: List[CategoryRead]
 
     class Config:
         from_attributes = True
 
-# RESULTADO DE IMPORTACIÓN MASIVA
-class CategoryImportResult(BaseModel):
+class CategoryImportResult(SecureBaseModel):
     total_imported: int
     total_errors: int
     imported: list

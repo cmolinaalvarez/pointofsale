@@ -1,62 +1,32 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# BASE
-class DivisionBase(BaseModel):
-    code: str
-    name: str
-    country_id: UUID
-   
-# CREATE (POST)
-class DivisionCreate(DivisionBase):
-    country_code: Optional[str] = None
-    iso_3166_2: Optional[str] = None
+class DivisionBase(EntityBase): pass
+class DivisionCreate(DivisionBase): pass
+class DivisionUpdate(DivisionBase): pass
 
-# UPDATE (PUT)
-class DivisionUpdate(DivisionBase):
-    country_code: Optional[str] = None
-    iso_3166_2: Optional[str] = None
-    active: bool 
-
-# PATCH (parcial)
-class DivisionPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    country_id: Optional[UUID] = None
-    country_code: Optional[str] = None
-    iso_3166_2: Optional[str] = None
+class DivisionPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-# LECTURA (GET)
-class DivisionRead(DivisionBase):
+class DivisionRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
-    country_id: UUID
-    country_code: Optional[str] = None
-    iso_3166_2: Optional[str] = None
-    country_name: str
+    description: Optional[str] = None
     active: bool
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    country_id: Optional[UUID] = None
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# LISTADO PAGINADO
-class DivisionListResponse(BaseModel):
+class DivisionListResponse(SecureBaseModel):
     total: int
     items: List[DivisionRead]
-
-    class Config:
-        from_attributes = True
-
-# RESULTADO DE IMPORTACIÓN MASIVA
-class DivisionImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

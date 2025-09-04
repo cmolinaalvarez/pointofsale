@@ -1,52 +1,31 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# BASE
-class CountryBase(BaseModel):
-    code: str    
-    name: str
-    country_code: Optional[str] = None
+class CountryBase(EntityBase): pass
+class CountryCreate(CountryBase): pass
+class CountryUpdate(CountryBase): pass
 
-
-# CREATE (POST)
-class CountryCreate(CountryBase):
-    pass
-
-# UPDATE (PUT)
-class CountryUpdate(CountryBase):
-    active:bool
-
-# PATCH (parcial)
-class CountryPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    country_code: Optional[str] = None
+class CountryPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-# LECTURA (GET)
-class CountryRead(CountryBase):
+class CountryRead(SecureBaseModel):
     id: UUID
+    code: str
+    name: str
+    description: Optional[str] = None
     active: bool
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# LISTADO PAGINADO
-class CountryListResponse(BaseModel):
+class CountryListResponse(SecureBaseModel):
     total: int
     items: List[CountryRead]
-
-    class Config:
-        from_attributes = True
-
-# RESULTADO DE IMPORTACIÓN MASIVA
-class CountryImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

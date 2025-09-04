@@ -1,113 +1,38 @@
-# app/schemas/third_party.py
-from pydantic import BaseModel, EmailStr
+from pydantic import Field, EmailStr
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
-from enum import Enum
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-
-# ==============================
-# ENUMS
-# ==============================
-class ThirdPartyTypeEnum(str, Enum):
-    C = "C"  # Cliente
-    P = "P"  # Proveedor
-    A = "A"  # Ambos
-
-
-class PersonTypeEnum(str, Enum):
-    N = "N"  # Natural
-    J = "J"  # Jurídica
-    A = "A"  # Ambos
-
-
-# ==============================
-# BASE
-# ==============================
-class ThirdPartyBase(BaseModel):
-    name: str
-    third_party_type: ThirdPartyTypeEnum
-    person_type: PersonTypeEnum
-
-    contact_name: Optional[str] = None
-    phone: Optional[str] = None
-    cell_phone: Optional[str] = None
+class ThirdPartyBase(EntityBase):
     email: Optional[EmailStr] = None
-    address: Optional[str] = None
+    phone: Optional[str] = Field(None, max_length=32)
 
-    municipality_id: Optional[UUID] = None
-    division_id: Optional[UUID] = None
-    country_id: Optional[UUID] = None
+class ThirdPartyCreate(ThirdPartyBase): pass
+class ThirdPartyUpdate(ThirdPartyBase): pass
 
-    nit: Optional[str] = None
-    active: bool = True
-
-
-# ==============================
-# CREATE (POST)
-# ==============================
-class ThirdPartyCreate(ThirdPartyBase):
-    pass
-
-
-# ==============================
-# UPDATE (PUT)
-# ==============================
-class ThirdPartyUpdate(ThirdPartyBase):
-    active: bool  # explícito para asegurar consistencia
-
-
-# ==============================
-# PATCH (parcial)
-# ==============================
-class ThirdPartyPatch(BaseModel):
-    name: Optional[str] = None
-    third_party_type: Optional[ThirdPartyTypeEnum] = None
-    person_type: Optional[PersonTypeEnum] = None
-
-    contact_name: Optional[str] = None
-    phone: Optional[str] = None
-    cell_phone: Optional[str] = None
-    email: Optional[EmailStr] = None
-    address: Optional[str] = None
-
-    municipality_id: Optional[UUID] = None
-    division_id: Optional[UUID] = None
-    country_id: Optional[UUID] = None
-
-    nit: Optional[str] = None
+class ThirdPartyPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = Field(None, max_length=32)
 
-
-# ==============================
-# LECTURA (GET)
-# ==============================
-class ThirdPartyRead(ThirdPartyBase):
+class ThirdPartyRead(SecureBaseModel):
     id: UUID
-    user_id: UUID
-    created_at: Optional[datetime] = None
+    code: str
+    name: str
+    description: Optional[str] = None
+    email: Optional[EmailStr] = None
+    phone: Optional[str] = None
+    active: bool
+    created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-
-# ==============================
-# LISTADO PAGINADO
-# ==============================
-class ThirdPartyListResponse(BaseModel):
+class ThirdPartyListResponse(SecureBaseModel):
     total: int
     items: List[ThirdPartyRead]
-
-    class Config:
-        from_attributes = True
-
-
-# ==============================
-# RESULTADO DE IMPORTACIÓN MASIVA
-# ==============================
-class ThirdPartyImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

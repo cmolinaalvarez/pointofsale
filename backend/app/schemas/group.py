@@ -1,58 +1,31 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# BASE
-class GroupBase(BaseModel):
-    code: str
-    name: str
-    description: Optional[str] = None
-    subcategory_id: UUID
+class GroupBase(EntityBase): pass
+class GroupCreate(GroupBase): pass
+class GroupUpdate(GroupBase): pass
 
-# CREATE (POST)
-class GroupCreate(GroupBase):
-    pass
+class GroupPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    active: Optional[bool] = None
 
-# UPDATE (PUT)
-class GroupUpdate(GroupBase):
-    active: bool
-
-# PATCH (PARCIAL)
-class GroupPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    subcategory_id: Optional[UUID] = None
-    active: Optional[bool] = None    
-
-# LECTURA (GET)
-class GroupRead(GroupBase):
+class GroupRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
-    subcategory_name: str
     description: Optional[str] = None
     active: bool
-    subcategory_id: UUID
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# RESPUESTA PAGINADA
-class GroupListResponse(BaseModel):
+class GroupListResponse(SecureBaseModel):
     total: int
     items: List[GroupRead]
-
-    class Config:
-        from_attributes = True
-
-# RESULTADO DE IMPORTACIÓN MASIVA
-class GroupImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

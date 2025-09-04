@@ -1,61 +1,35 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# BASE
-class DocumentBase(BaseModel):
-    code: str
-    name: str
-    description: str
-    prefix: str
-    document_type: str
-    
+class DocumentBase(EntityBase):
+    uses_yearly_sequence: bool = True
 
-# CREATE (POST)
-class DocumentCreate(DocumentBase):
-    pass
+class DocumentCreate(DocumentBase): pass
+class DocumentUpdate(DocumentBase): pass
 
-# UPDATE (PUT)
-class DocumentUpdate(DocumentBase):
-    active: bool = True
-
-# PATCH (parcial)
-class DocumentPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    prefix: Optional[str] = None
-    document_type: Optional[str] = None
+class DocumentPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    uses_yearly_sequence: Optional[bool] = None
     active: Optional[bool] = None
 
-# LECTURA (GET)
-class DocumentRead(DocumentBase):
+class DocumentRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
     description: Optional[str] = None
-    prefix: Optional[str] = None
-    document_type: Optional[str] = None
+    uses_yearly_sequence: bool
     active: bool
-    user_id: UUID
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# LISTADO PAGINADO
-class DocumentListResponse(BaseModel):
+class DocumentListResponse(SecureBaseModel):
     total: int
     items: List[DocumentRead]
-
-    class Config:
-        from_attributes = True
-
-# RESULTADO DE IMPORTACIÓN MASIVA
-class DocumentImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

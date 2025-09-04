@@ -1,76 +1,39 @@
-# app/schemas/account.py
-
-from pydantic import BaseModel, Field
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
+from enum import Enum
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-# ====================================================
-# BASE (común para crear/actualizar)
-# ====================================================
+class AccountType(str, Enum):
+    ASSET="ASSET"; LIABILITY="LIABILITY"; EQUITY="EQUITY"; INCOME="INCOME"; EXPENSE="EXPENSE"
 
-class AccountBase(BaseModel):
-    code:str
-    name: str = Field(..., max_length=100, description="Nombre de la cuenta contable")
-    description: Optional[str] = Field(None, max_length=255, description="Descripción de la cuenta")
-    account_type: str = Field(..., max_length=20, description="Tipo de cuenta (ej: 'activo', 'pasivo', etc.)")
-    active: bool = Field(default=True, description="Indica si la cuenta está activa")
+class AccountBase(EntityBase):
+    account_type: AccountType
 
-# ====================================================
-# CREACIÓN (POST)
-# ====================================================
+class AccountCreate(AccountBase): pass
+class AccountUpdate(AccountBase): pass
 
-class AccountCreate(AccountBase):
-    pass
+class AccountPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    active: Optional[bool] = None
+    account_type: Optional[AccountType] = None
 
-# ====================================================
-# ACTUALIZACIÓN COMPLETA (PUT)
-# ====================================================
-
-class AccountUpdate(AccountBase):
-    pass
-
-# ====================================================
-# ACTUALIZACIÓN PARCIAL (PATCH)
-# ====================================================
-
-class AccountPatch(BaseModel):
-    code: Optional[str] = Field(None, max_length=20)
-    name: Optional[str] = Field(None, max_length=100)
-    description: Optional[str] = Field(None, max_length=255)
-    account_type: Optional[str] = Field(None, max_length=20)
-    active: Optional[bool]
-
-# ====================================================
-# LECTURA (GET)
-# ====================================================
-
-class AccountRead(AccountBase):
+class AccountRead(SecureBaseModel):
     id: UUID
-    user_id: UUID
+    code: str
+    name: str
+    description: Optional[str] = None
+    account_type: AccountType
+    active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
+    class Config: from_attributes = True
 
-    class Config:
-        from_attributes = True
-
-# ====================================================
-# RESPUESTA PAGINADA
-# ====================================================
-
-class AccountListResponse(BaseModel):
+class AccountListResponse(SecureBaseModel):
     total: int
     items: List[AccountRead]
-
-    class Config:
-        from_attributes = True
-
-# ====================================================
-# RESULTADO DE IMPORTACIÓN MASIVA
-# ====================================================
-
-class AccountImportResult(BaseModel):
-    total_imported: int
-    total_errors: int
-    imported: list
-    errors: list
+    class Config: from_attributes = True

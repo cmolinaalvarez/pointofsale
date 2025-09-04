@@ -1,56 +1,48 @@
-from pydantic import BaseModel
+from pydantic import Field
 from uuid import UUID
 from typing import Optional, List
 from datetime import datetime
 
-# BASE
-class BrandBase(BaseModel):
+from app.schemas.security_schemas import EntityBase, SecureBaseModel
+
+class BrandBase(EntityBase):
+    # Si requieres límites distintos, ajústalos aquí con Field(...)
+    pass
+
+class BrandCreate(BrandBase):
+    pass
+
+class BrandUpdate(BrandBase):
+    pass
+
+class BrandPatch(SecureBaseModel):
+    code: Optional[str] = Field(None, min_length=1, max_length=10)
+    name: Optional[str] = Field(None, min_length=1, max_length=100)
+    description: Optional[str] = Field(None, max_length=500)
+    active: Optional[bool] = None
+
+class BrandRead(SecureBaseModel):
+    id: UUID
     code: str
     name: str
     description: Optional[str] = None
-    active: bool = True
-
-# CREATE (POST)
-class BrandCreate(BrandBase):
-    pass
-# UPDATE (PUT)
-class BrandUpdate(BrandBase):
-    pass  # Igual, si son los mismos campos que BrandBase
-
-# PATCH (parcial)
-class BrandPatch(BaseModel):
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    active: Optional[bool] = None
-
-# LECTURA (GET)
-class BrandRead(BrandBase):
-    id: UUID
-    code: Optional[str] = None
-    name: Optional[str] = None
-    description: Optional[str] = None
-    active: Optional[bool] = None
-    user_id: UUID
+    active: bool
     created_at: datetime
     updated_at: Optional[datetime] = None
+    user_id: UUID
 
     class Config:
         from_attributes = True
 
-# -- Este es el schema que te faltaba --
-class BrandListResponse(BaseModel):
+class BrandListResponse(SecureBaseModel):
     total: int
     items: List[BrandRead]
 
     class Config:
         from_attributes = True
-        
 
-
-class BrandImportResult(BaseModel):
+class BrandImportResult(SecureBaseModel):
     total_imported: int
     total_errors: int
     imported: list
     errors: list
-
