@@ -33,3 +33,9 @@ class RoleListResponse(SecureBaseModel):
     total: int
     items: List[RoleRead]
     class Config: from_attributes = True
+    
+class RoleImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

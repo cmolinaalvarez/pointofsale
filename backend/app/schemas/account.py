@@ -37,3 +37,9 @@ class AccountListResponse(SecureBaseModel):
     total: int
     items: List[AccountRead]
     class Config: from_attributes = True
+    
+class AccountImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

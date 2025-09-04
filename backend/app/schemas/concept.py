@@ -29,3 +29,9 @@ class ConceptListResponse(SecureBaseModel):
     total: int
     items: List[ConceptRead]
     class Config: from_attributes = True
+    
+class ConceptImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

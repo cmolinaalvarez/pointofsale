@@ -36,3 +36,9 @@ class ThirdPartyListResponse(SecureBaseModel):
     total: int
     items: List[ThirdPartyRead]
     class Config: from_attributes = True
+    
+class ThirdPartyImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list
