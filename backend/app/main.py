@@ -4,11 +4,18 @@
 
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from app.middleware.security_middleware import SecurityMiddleware
 from app.core.cors import setup_secure_cors
 from app.core.config import settings
-from app.utils.logging_config import setup_logging
+from app.core.logging import setup_logging
 import logging
+
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
+from app.middleware.security_headers import SecurityHeadersMiddleware
+from app.security.rate_limiting import limiter
+from app.security.input_validation import BodySanitizationMiddleware
+from app.security.authentication import JWTAuthMiddleware
+from app.core.errors import install_exception_handlers
 
 # ========================================================================
 # Configuración inicial
@@ -30,12 +37,17 @@ app = FastAPI(
     redoc_url=None,
 )
 
+# Seguridad HTTP
+app.add_middleware(SecurityHeadersMiddleware)
+
+# Rate limit global
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda r, e: e.response)
+app.add_middleware(SlowAPIMiddleware)
+
 # ========================================================================
 # Middlewares de seguridad y CORS
 # ========================================================================
-
-# 1. Middleware de seguridad personalizado
-app.add_middleware(SecurityMiddleware)
 
 # 2. Configurar CORS seguro (usando la función personalizada)
 setup_secure_cors(app)
@@ -131,3 +143,12 @@ if settings.APP_ENV == "development":
             "debug": True,
             "allowed_origins": settings.ALLOWED_ORIGINS.split(',') if hasattr(settings, 'ALLOWED_ORIGINS') else []
         }
+        
+app.add_middleware(SecurityHeadersMiddleware)
+app.add_middleware(BodySanitizationMiddleware)   # opcional: BodySanitizationMiddleware(app, field_max={"name":100})
+app.add_middleware(JWTAuthMiddleware)
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, lambda r, e: e.response)
+app.add_middleware(SlowAPIMiddleware)
+install_exception_handlers(app)
+

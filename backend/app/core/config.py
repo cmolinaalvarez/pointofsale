@@ -26,5 +26,6 @@ class Settings(BaseSettings):
     ADMIN_FULL_NAME: str = "Administrador"
     ADMIN_PASSWORD: str = "ChangeThis!"
     APP_ENV: str = "dev"
-
+    ALLOWED_ORIGINS: str = ""
+    
 settings = Settings()

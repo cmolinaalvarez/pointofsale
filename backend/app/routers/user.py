@@ -8,7 +8,9 @@ from typing import Optional
 import logging
 import csv
 from io import StringIO
-import bcrypt
+
+# Usa hashing centralizado
+from app.core.security import get_password_hash, verify_password
 
 from app.schemas.user import UserCreate, UserUpdate, UserRead, UserPatch, UserListResponse
 from app.crud.user import create_user, get_users, get_user_by_id, update_user, patch_user
@@ -145,12 +147,15 @@ async def import_users(
         reader = csv.DictReader(StringIO(content.decode("utf-8")))
         if reader.fieldnames:
             reader.fieldnames = [h.strip().replace('\ufeff', '') for h in reader.fieldnames]
+
         to_add = []
         for row in reader:
             pwd = row.get("password")
             if not pwd:
                 continue
-            hashed = bcrypt.hashpw(pwd.encode(), bcrypt.gensalt()).decode()
+            # Hash centralizado y no bloqueante
+            hashed = await get_password_hash(pwd)
+
             user = User(
                 username=row.get("username"),
                 email=row.get("email"),
@@ -161,8 +166,10 @@ async def import_users(
                 user_id=current_user.id,
             )
             to_add.append(user)
+
         if not to_add:
             raise HTTPException(status_code=400, detail="Archivo sin filas válidas")
+
         db.add_all(to_add)
         await log_action(
             db,

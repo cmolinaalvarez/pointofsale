@@ -1,110 +1,41 @@
-import re
-import html
-from fastapi import HTTPException, status
-from typing import Any, Dict, Optional
-import logging
+from __future__ import annotations
+import re, html
+from urllib.parse import urlparse
+from typing import Any, Dict
 
-logger = logging.getLogger(__name__)
+SQL_INJECTION_PATTERNS = [
+    r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|ALTER|CREATE|TRUNCATE)\b)",
+    r"(\-\-|\#|\/\*)",
+    r"(\b(OR|AND)\s+['\"]?[01]['\"]?\s*[=<>])",
+    r"(;|\|&)",
+]
+SENSITIVE_FIELDS = {"password","token","secret","authorization","api_key"}
 
-class SecurityUtils:
-    # Patrones de inyección SQL
-    SQL_INJECTION_PATTERNS = [
-        r"(\b(SELECT|INSERT|UPDATE|DELETE|DROP|UNION|EXEC|ALTER|CREATE|TRUNCATE)\b)",
-        r"(\-\-|\#|\/\*)",
-        r"(\b(OR|AND)\s+['\"]?[01]['\"]?\s*[=<>])",
-        r"(;|\|&)",
-    ]
-    
-    # Patrones de XSS
-    XSS_PATTERNS = [
-        r"<script.*?>.*?</script>",
-        r"javascript:",
-        r"onerror\s*=",
-        r"onload\s*=",
-        r"onclick\s*=",
-        r"vbscript:",
-        r"expression\s*\(",
-    ]
-    
-    # Campos sensibles que deben ser ofuscados en logs
-    SENSITIVE_FIELDS = {
-        'password', 'token', 'secret', 'api_key', 'credit_card', 
-        'cvv', 'expiration_date', 'ssn', 'phone_number', 'email'
-    }
+def sanitize_text(value: str, *, max_len: int | None = None) -> str:
+    if max_len is not None: value = value[:max_len]
+    value = re.sub(r"<\s*\/?\s*script[^>]*>", "", value, flags=re.I)
+    value = re.sub(r"on\w+\s*=", "", value, flags=re.I)
+    value = re.sub(r"javascript\s*:", "", value, flags=re.I)
+    return html.escape(value, quote=True)
 
-    @classmethod
-    def sanitize_input(cls, input_string: str, field_name: str = None) -> str:
-        """
-        Sanitiza y valida una entrada de texto
-        """
-        if not isinstance(input_string, str):
-            return input_string
-            
-        # 1. Validar longitud máxima
-        if field_name and hasattr(cls, 'FIELD_MAX_LENGTHS'):
-            max_length = cls.FIELD_MAX_LENGTHS.get(field_name, 255)
-            if len(input_string) > max_length:
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail=f"{field_name} excede la longitud máxima permitida"
-                )
-        
-        # 2. Filtrar inyección SQL
-        for pattern in cls.SQL_INJECTION_PATTERNS:
-            if re.search(pattern, input_string, re.IGNORECASE):
-                logger.warning(f"Intento de inyección SQL detectado en campo {field_name}: {input_string}")
-                raise HTTPException(
-                    status_code=status.HTTP_400_BAD_REQUEST,
-                    detail="Entrada contiene patrones potencialmente peligrosos"
-                )
-        
-        # 3. Sanitizar XSS
-        cleaned = input_string
-        for pattern in cls.XSS_PATTERNS:
-            cleaned = re.sub(pattern, "", cleaned, flags=re.IGNORECASE)
-        
-        # 4. Escapar caracteres HTML
-        cleaned = html.escape(cleaned)
-        
-        return cleaned
+def sanitize_dict(d: Dict[str, Any], field_max: Dict[str,int] | None = None) -> Dict[str, Any]:
+    out: Dict[str, Any] = {}
+    for k,v in d.items():
+        if isinstance(v, str): out[k] = sanitize_text(v, max_len=(field_max or {}).get(k))
+        elif isinstance(v, dict): out[k] = sanitize_dict(v, field_max)
+        elif isinstance(v, list): out[k] = [sanitize_text(x) if isinstance(x, str) else x for x in v]
+        else: out[k] = v
+    return out
 
-    @classmethod
-    def sanitize_data(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Sanitiza todos los campos de un diccionario
-        """
-        sanitized = {}
-        for key, value in data.items():
-            if isinstance(value, str):
-                sanitized[key] = cls.sanitize_input(value, key)
-            elif isinstance(value, dict):
-                sanitized[key] = cls.sanitize_data(value)
-            elif isinstance(value, list):
-                sanitized[key] = [cls.sanitize_data(item) if isinstance(item, dict) else 
-                                 cls.sanitize_input(item, key) if isinstance(item, str) else item 
-                                 for item in value]
-            else:
-                sanitized[key] = value
-        return sanitized
+def looks_like_sql_injection(text: str) -> bool:
+    return any(re.search(p, text, flags=re.I) for p in SQL_INJECTION_PATTERNS)
 
-    @classmethod
-    def obfuscate_sensitive_data(cls, data: Dict[str, Any]) -> Dict[str, Any]:
-        """
-        Ofusca datos sensibles para logging
-        """
-        obfuscated = data.copy()
-        for key in obfuscated.keys():
-            if any(sensitive in key.lower() for sensitive in cls.SENSITIVE_FIELDS):
-                obfuscated[key] = "***REDACTED***"
-        return obfuscated
+def obfuscate_sensitive(d: Dict[str, Any]) -> Dict[str, Any]:
+    return {k: ("***REDACTED***" if k.lower() in SENSITIVE_FIELDS else v) for k,v in d.items()}
 
-# Configuración de longitudes máximas por tipo de campo
-SecurityUtils.FIELD_MAX_LENGTHS = {
-    'code': 10,
-    'name': 100,
-    'description': 500,
-    'basis': 20,
-    'email': 254,
-    'username': 50,
-    'password': 128,
-}
+def is_safe_redirect(url: str, allowed_hosts: list[str] | None = None) -> bool:
+    allowed_hosts = allowed_hosts or []
+    p = urlparse(url)
+    if not p.netloc:  # relativo
+        return True
+    return p.netloc.lower() in [h.lower() for h in allowed_hosts]
