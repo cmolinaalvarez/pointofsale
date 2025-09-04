@@ -30,3 +30,9 @@ class DivisionListResponse(SecureBaseModel):
     total: int
     items: List[DivisionRead]
     class Config: from_attributes = True
+    
+class DivisionImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

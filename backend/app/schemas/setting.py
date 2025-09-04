@@ -34,3 +34,9 @@ class SettingListResponse(SecureBaseModel):
     total: int
     items: List[SettingRead]
     class Config: from_attributes = True
+
+class SettingImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

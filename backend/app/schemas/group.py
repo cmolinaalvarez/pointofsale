@@ -29,3 +29,9 @@ class GroupListResponse(SecureBaseModel):
     total: int
     items: List[GroupRead]
     class Config: from_attributes = True
+
+class GroupImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

@@ -29,3 +29,9 @@ class WarehouseListResponse(SecureBaseModel):
     total: int
     items: List[WarehouseRead]
     class Config: from_attributes = True
+    
+class WarehouseImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

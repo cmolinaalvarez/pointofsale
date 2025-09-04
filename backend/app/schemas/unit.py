@@ -29,3 +29,9 @@ class UnitListResponse(SecureBaseModel):
     total: int
     items: List[UnitRead]
     class Config: from_attributes = True
+    
+class UnitImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

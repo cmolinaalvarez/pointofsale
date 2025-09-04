@@ -29,3 +29,9 @@ class CountryListResponse(SecureBaseModel):
     total: int
     items: List[CountryRead]
     class Config: from_attributes = True
+
+class CountryImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

@@ -4,17 +4,17 @@ from typing import Optional, List
 from datetime import datetime
 from app.schemas.security_schemas import EntityBase, SecureBaseModel
 
-class SubcategoryBase(EntityBase): pass
-class SubcategoryCreate(SubcategoryBase): pass
-class SubcategoryUpdate(SubcategoryBase): pass
+class SubCategoryBase(EntityBase): pass
+class SubCategoryCreate(SubCategoryBase): pass
+class SubCategoryUpdate(SubCategoryBase): pass
 
-class SubcategoryPatch(SecureBaseModel):
+class SubCategoryPatch(SecureBaseModel):
     code: Optional[str] = Field(None, min_length=1, max_length=10)
     name: Optional[str] = Field(None, min_length=1, max_length=100)
     description: Optional[str] = Field(None, max_length=500)
     active: Optional[bool] = None
 
-class SubcategoryRead(SecureBaseModel):
+class SubCategoryRead(SecureBaseModel):
     id: UUID
     code: str
     name: str
@@ -26,7 +26,13 @@ class SubcategoryRead(SecureBaseModel):
     category_id: Optional[UUID] = None
     class Config: from_attributes = True
 
-class SubcategoryListResponse(SecureBaseModel):
+class SubCategoryListResponse(SecureBaseModel):
     total: int
-    items: List[SubcategoryRead]
+    items: List[SubCategoryRead]
     class Config: from_attributes = True
+    
+class SubCategoryImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list

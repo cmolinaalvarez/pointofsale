@@ -30,3 +30,10 @@ class MunicipalityListResponse(SecureBaseModel):
     total: int
     items: List[MunicipalityRead]
     class Config: from_attributes = True
+    
+
+class MunicipalityImportResult(SecureBaseModel):
+    total_imported: int
+    total_errors: int
+    imported: list
+    errors: list
