@@ -148,19 +148,12 @@ async def oauth2_info():
         "client_secret_required": True
     }
 
+   
+# Opcional: endpoint simple para refrescar access_token
 @router.post("/refresh", response_model=Token)
-async def refresh_token(refresh_token: str = Form(...), client_id: str = Form(None), client_secret: str = Form(None)):
-    # Opcional: exige validación de cliente si pasas client creds
-    if client_id or client_secret:
-        if client_id != settings.oauth2_client_id or client_secret != settings.oauth2_client_secret:
-            raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Cliente no autorizado")
+async def refresh_token(refresh_token: str = Form(...)):
     payload = decode_token(refresh_token, expected_type="refresh")
     if not payload:
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Refresh token inválido")
-    user_id = payload.get("sub")
-    access = create_access_token({"sub": str(user_id)})
-    return {
-        "access_token": access,
-        "token_type": "bearer",
-        "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60
-    }
+    new_access = create_access_token({"sub": payload["sub"]})
+    return {"access_token": new_access, "token_type": "bearer", "expires_in": ACCESS_TOKEN_EXPIRE_MINUTES * 60}

@@ -1,15 +1,13 @@
 from __future__ import annotations
-
 from datetime import datetime, timedelta, timezone
 from typing import Optional, Sequence
 from jose import jwt, JWTError
 import uuid
 from app.core.config import settings
 
-# === Config ===
 ALGORITHM = settings.jwt_algorithm
 SECRET_KEY = settings.jwt_secret_key
-ACCESS_TOKEN_EXPIRE_MINUTES = getattr(settings, "jwt_access_token_expire_minutes", 15)
+ACCESS_TOKEN_EXPIRE_MINUTES = getattr(settings, "jwt_access_token_expire_minutes", 60)
 ISSUER = "pos-backend"
 AUDIENCE = "pos-frontend"
 
