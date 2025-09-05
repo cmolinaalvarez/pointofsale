@@ -99,10 +99,10 @@ class ProductListResponse(SecureBaseModel):
     items: List[ProductRead]
 
     model_config = ConfigDict(from_attributes=True)
+  
+# Al final de app/schemas/product.py
+from app.schemas.security_schemas import ImportResult as _GenericImportResult
 
-# ---------- Resultado importación ----------
-class ProductImportResult(SecureBaseModel):
-    total_imported: int
-    total_errors: int
-    imported: List[str]
-    errors: List[Dict[str, Any]]
+class ProductImportResult(_GenericImportResult): 
+    pass
+

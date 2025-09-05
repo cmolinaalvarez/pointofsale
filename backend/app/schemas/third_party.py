@@ -50,9 +50,10 @@ class ThirdPartyListResponse(SecureBaseModel):
 
     model_config = ConfigDict(from_attributes=True)
 
-# ---------- Resultado importación ----------
-class ThirdPartyImportResult(SecureBaseModel):
-    total_imported: int
-    total_errors: int
-    imported: List[str]
-    errors: List[Dict[str, Any]]
+
+# Al final de app/schemas/third_party.py
+from app.schemas.security_schemas import ImportResult as _GenericImportResult
+
+class ThirdPartyImportResult(_GenericImportResult): 
+    pass
+
